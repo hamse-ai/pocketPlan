@@ -14,7 +14,7 @@ Follow these steps to set up the project locally on your machine:
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repo-url>
+   git clone # https://github.com/hamse-ai/pocketPlan.git or git@github.com:hamse-ai/pocketPlan.git
    cd pocket_plan
    ```
 
