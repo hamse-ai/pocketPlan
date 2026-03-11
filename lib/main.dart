@@ -19,7 +19,7 @@ class PocketPlanApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // TODO: Register your Feature BLoCs here
+        // TODO: Register Feature BLoCs here
         // BlocProvider(create: (_) => di.sl<AuthBloc>()),
       ],
       child: MaterialApp(
