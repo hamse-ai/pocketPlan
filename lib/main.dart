@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'injection_container.dart' as di;
+import 'core/theme/appTheme.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized before calling Firebase or GetIt
@@ -25,11 +26,7 @@ class PocketPlanApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Pocket Plan',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          // TODO: Implement custom core Theme in core/theme
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme,
         home: const InitialScreen(), // Placeholder for initial routing logic
       ),
     );
@@ -48,7 +45,6 @@ class InitialScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pocket Plan'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: const Center(
         child: Text(
