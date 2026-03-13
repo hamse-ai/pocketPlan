@@ -5,6 +5,7 @@ import 'package:pocket_plan/features/budget/presentation/pages/expense_screen.da
 import 'package:pocket_plan/features/income/presentation/bloc/income_bloc.dart';
 import 'package:pocket_plan/features/income/presentation/pages/income_screen.dart';
 import 'widgets/base_layout.dart';
+import 'package:pocket_plan/features/profile/presentation/pages/profile_page.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -21,6 +22,9 @@ class _MainNavigationState extends State<MainNavigation> {
     const IncomeScreen(),
     const ExpenseScreen(),
     const PlaceholderScreen(screenName: 'Profile'),
+    const PlaceholderScreen(screenName: 'Income'),
+    const PlaceholderScreen(screenName: 'Expense'),
+    const ProfilePage(),
     const PlaceholderScreen(screenName: 'Settings'),
   ];
 
