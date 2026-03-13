@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pocket_plan/core/presentation/main_navigation.dart';
 import 'injection_container.dart' as di;
 import 'core/theme/appTheme.dart';
 
@@ -27,32 +28,9 @@ class PocketPlanApp extends StatelessWidget {
         title: 'Pocket Plan',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const InitialScreen(), // Placeholder for initial routing logic
+        home: const MainNavigation(), // Placeholder for initial routing logic
       ),
     );
   }
 }
 
-// ------------------------------------------------------------------------
-// Placeholder Screen to ensure the app compiles out of the box
-// ------------------------------------------------------------------------
-
-class InitialScreen extends StatelessWidget {
-  const InitialScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pocket Plan'),
-      ),
-      body: const Center(
-        child: Text(
-          'Welcome to Pocket Plan\nBuilding Financial Resilience',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
-}
