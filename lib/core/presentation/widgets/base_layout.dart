@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
 
 class BaseLayout extends StatelessWidget {
-  final String title;
+  final String? title; // Make title optional
   final Widget body;
   final int currentIndex;
   final Function(int) onNavigationTap;
   final List<Widget>? actions;
+  final bool showAppBar; // Add this parameter
 
   const BaseLayout({
     super.key,
-    required this.title,
+    this.title, // Optional now
     required this.body,
     required this.currentIndex,
     required this.onNavigationTap,
     this.actions,
+    this.showAppBar = true, // Default to true
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: actions,
-        centerTitle: true,
-      ),
+      appBar: showAppBar && title != null // Conditionally show AppBar
+          ? AppBar(
+              title: Text(title!),
+              actions: actions,
+              centerTitle: true,
+            )
+          : null,
 
       body: body,
 

@@ -20,12 +20,21 @@ class _MainNavigationState extends State<MainNavigation> {
     PlaceholderScreen(screenName: 'Settings'),
   ];
 
-  final List<String> _titles = const [
-    'Home',
+  final List<String?> _titles = const [
+    null, // Home has no AppBar
     'Income',
     'Expense',
     'Profile',
     'Settings',
+  ];
+
+  // Track which screens should show AppBar
+  final List<bool> _showAppBar = const [
+    false, 
+    true,  
+    true,  
+    true,  
+    true,  
   ];
 
   void _onNavigationTap(int index) {
@@ -41,6 +50,7 @@ class _MainNavigationState extends State<MainNavigation> {
       body: _screens[_currentIndex],
       currentIndex: _currentIndex,
       onNavigationTap: _onNavigationTap,
+      showAppBar: _showAppBar[_currentIndex],
     );
   }
 }
