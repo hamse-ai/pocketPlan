@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'widgets/base_layout.dart';
+import 'package:pocket_plan/features/profile/presentation/pages/profile_page.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -16,7 +17,7 @@ class _MainNavigationState extends State<MainNavigation> {
     const PlaceholderScreen(screenName: 'Home'),
     const PlaceholderScreen(screenName: 'Income'),
     const PlaceholderScreen(screenName: 'Expense'),
-    const PlaceholderScreen(screenName: 'Profile'),
+    const ProfilePage(),
     const PlaceholderScreen(screenName: 'Settings'),
   ];
 
