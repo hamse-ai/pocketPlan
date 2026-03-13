@@ -11,21 +11,30 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  // Temporary placeholders
-  final List<Widget> _screens = const [
-    PlaceholderScreen(screenName: 'Home'),
-    PlaceholderScreen(screenName: 'Income'),
-    PlaceholderScreen(screenName: 'Expense'),
-    PlaceholderScreen(screenName: 'Profile'),
-    PlaceholderScreen(screenName: 'Settings'),
+  // Remove 'const' from these lists
+  final List<Widget> _screens = [
+    const PlaceholderScreen(screenName: 'Home'),
+    const PlaceholderScreen(screenName: 'Income'),
+    const PlaceholderScreen(screenName: 'Expense'),
+    const PlaceholderScreen(screenName: 'Profile'),
+    const PlaceholderScreen(screenName: 'Settings'),
   ];
 
-  final List<String> _titles = const [
-    'Home',
+  final List<String?> _titles = [
+    null, // Home has no AppBar
     'Income',
     'Expense',
     'Profile',
     'Settings',
+  ];
+
+  // Track which screens should show AppBar
+  final List<bool> _showAppBar = [
+    false, // Home - no AppBar
+    true,  // Income - has AppBar
+    true,  // Expense - has AppBar
+    true,  // Profile - has AppBar
+    true,  // Settings - has AppBar
   ];
 
   void _onNavigationTap(int index) {
@@ -41,6 +50,7 @@ class _MainNavigationState extends State<MainNavigation> {
       body: _screens[_currentIndex],
       currentIndex: _currentIndex,
       onNavigationTap: _onNavigationTap,
+      showAppBar: _showAppBar[_currentIndex],
     );
   }
 }
