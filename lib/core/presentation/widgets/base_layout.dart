@@ -27,37 +27,49 @@ class BaseLayout extends StatelessWidget {
 
       body: body,
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onNavigationTap,
-        type: BottomNavigationBarType.fixed,
-
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Colors.black,
+              width: 1.0,
+            ),
           ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: onNavigationTap,
+          type: BottomNavigationBarType.fixed,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money),
-            label: 'Income',
-          ),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: '',
+            ),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.money_off),
-            label: 'Expense',
-          ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.attach_money),
+              label: '',
+            ),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.money_off),
+              label: '',
+            ),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: '',
+            ),
+
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: '',
+            ),
+          ],
+        ),
       ),
     );
   }
