@@ -19,17 +19,11 @@ class PocketPlanApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        // TODO: Register Feature BLoCs here
-        // BlocProvider(create: (_) => di.sl<AuthBloc>()),
-      ],
-      child: MaterialApp(
-        title: 'Pocket Plan',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const MainNavigation(), // Placeholder for initial routing logic
-      ),
+    return MaterialApp(
+      title: 'Pocket Plan',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      home: const MainNavigation(),
     );
   }
 }
