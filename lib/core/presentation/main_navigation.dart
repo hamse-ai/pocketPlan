@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pocket_plan/features/budget/presentation/bloc/expense_bloc.dart';
+import 'package:pocket_plan/features/budget/presentation/pages/expense_screen.dart';
+import 'package:pocket_plan/features/income/presentation/bloc/income_bloc.dart';
+import 'package:pocket_plan/features/income/presentation/pages/income_screen.dart';
 import 'widgets/base_layout.dart';
 import 'package:pocket_plan/features/profile/presentation/pages/profile_page.dart';
 import 'package:pocket_plan/features/settings/presentation/settings_page.dart';
@@ -13,53 +18,59 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  // Remove 'const' from these lists
   final List<Widget> _screens = [
-    const PlaceholderScreen(screenName: 'Home'),
-    const PlaceholderScreen(screenName: 'Income'),
-    const PlaceholderScreen(screenName: 'Expense'),
-    const ProfilePage(),
-    const SettingsPage(),
-  ];
+  const PlaceholderScreen(screenName: 'Home'),
+  const IncomeScreen(),
+  const ExpenseScreen(),
+  const ProfilePage(),
+  const SettingsPage(),
+];
 
   final List<String?> _titles = [
-    null, // Home has no AppBar
+    null,       // Home has no AppBar
     'Income',
-    'Expense',
+    'Expenses',
     'Profile',
     'Settings',
   ];
 
-  // Track which screens should show AppBar
   final List<bool> _showAppBar = [
-    false, // Home - no AppBar
-    true,  // Income - has AppBar
-    true,  // Expense - has AppBar
-    true,  // Profile - has AppBar
-    true,  // Settings - has AppBar
+    false, // Home
+    true,  // Income
+    true,  // Expenses
+    true,  // Profile
+    true,  // Settings
   ];
 
   void _onNavigationTap(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    setState(() => _currentIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BaseLayout(
-      title: _titles[_currentIndex],
-      body: _screens[_currentIndex],
-      currentIndex: _currentIndex,
-      onNavigationTap: _onNavigationTap,
-      showAppBar: _showAppBar[_currentIndex],
+    // Provide both BLoCs at the navigation level so all screens can access them.
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<IncomeBloc>(
+          create: (_) => IncomeBloc()..add(const LoadIncomeTransactions()),
+        ),
+        BlocProvider<ExpenseBloc>(
+          create: (_) => ExpenseBloc()..add(const LoadExpenseTransactions()),
+        ),
+      ],
+      child: BaseLayout(
+        title: _titles[_currentIndex],
+        body: _screens[_currentIndex],
+        currentIndex: _currentIndex,
+        onNavigationTap: _onNavigationTap,
+        showAppBar: _showAppBar[_currentIndex],
+      ),
     );
   }
 }
 
 
 // TEMPORARY SCREEN (will be replaced by team screens)
-
 class PlaceholderScreen extends StatelessWidget {
   final String screenName;
 
