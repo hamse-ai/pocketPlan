@@ -50,12 +50,12 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Tab Bar with rounded ends
           _SettingsTabView(),
-          
+
           const SizedBox(height: 24),
-          
+
           // Save Preferences Button (only takes needed width)
           ElevatedButton(
             onPressed: () {},
@@ -69,15 +69,12 @@ class SettingsPage extends StatelessWidget {
             ),
             child: Text(
               'Save Preferences',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Account Management Section (below tabs)
           Text(
             'Account Management',
@@ -97,81 +94,75 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16),
-          
-          // Download My Data Button
-SizedBox(
-  width: double.infinity,
-  child: Container(
-    decoration: BoxDecoration(
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.15),
-          blurRadius: 8,
-          offset: Offset(0, 4),
-        ),
-      ],
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: OutlinedButton(
-      onPressed: () {},
-      style: OutlinedButton.styleFrom(
-        backgroundColor: AppColors.onPrimary,
-        foregroundColor: AppColors.onSurface,
-        padding: EdgeInsets.symmetric(vertical: 16),
-        side: BorderSide(color: AppColors.onSurface, width: 2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-      child: Text(
-        'Download My Data',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    ),
-  ),
-),
-SizedBox(height: 16),
 
-// Change Password Button
-SizedBox(
-  width: double.infinity,
-  child: Container(
-    decoration: BoxDecoration(
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.15),
-          blurRadius: 8,
-          offset: Offset(0, 4),
-        ),
-      ],
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: OutlinedButton(
-      onPressed: () {},
-      style: OutlinedButton.styleFrom(
-        backgroundColor: AppColors.onPrimary,
-        foregroundColor: AppColors.onSurface,
-        padding: EdgeInsets.symmetric(vertical: 16),
-        side: BorderSide(color: AppColors.onSurface, width: 2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-      child: Text(
-        'Change Password',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    ),
-  ),
-),
+          // Download My Data Button
+          SizedBox(
+            width: double.infinity,
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: OutlinedButton(
+                onPressed: () {},
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: AppColors.onPrimary,
+                  foregroundColor: AppColors.onSurface,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  side: BorderSide(color: AppColors.onSurface, width: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Download My Data',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
           SizedBox(height: 16),
-          
+
+          // Change Password Button
+          SizedBox(
+            width: double.infinity,
+            child: Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: OutlinedButton(
+                onPressed: () {},
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: AppColors.onPrimary,
+                  foregroundColor: AppColors.onSurface,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  side: BorderSide(color: AppColors.onSurface, width: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Change Password',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+
           // Delete Account Button
           SizedBox(
             width: double.infinity,
@@ -184,6 +175,7 @@ SizedBox(
                     offset: Offset(0, 4),
                   ),
                 ],
+                borderRadius: BorderRadius.circular(8),
               ),
               child: ElevatedButton(
                 onPressed: () {},
@@ -198,15 +190,73 @@ SizedBox(
                 ),
                 child: Text(
                   'Delete Account',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
           ),
+          SizedBox(height: 24),
+
+          Text(
+            'More',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.onSurface,
+            ),
+          ),
+
           SizedBox(height: 16),
+
+          _SettingsNavButton(
+            title: 'Help & Support',
+            icon: Icons.help_outline,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => HelpSupportPage()),
+              );
+            },
+          ),
+
+          SizedBox(height: 12),
+
+          _SettingsNavButton(
+            title: 'Tips',
+            icon: Icons.lightbulb_outline,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => TipsPage()),
+              );
+            },
+          ),
+
+          SizedBox(height: 12),
+
+          _SettingsNavButton(
+            title: 'Sign In',
+            icon: Icons.login,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SignInPage()),
+              );
+            },
+          ),
+
+          SizedBox(height: 12),
+
+          _SettingsNavButton(
+            title: 'Sign Up',
+            icon: Icons.person_add,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SignUpPage()),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -235,10 +285,7 @@ class _SettingsTabView extends StatelessWidget {
               ),
               labelColor: AppColors.onSurface,
               unselectedLabelColor: AppColors.onSurfaceSecondary,
-              labelStyle: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
+              labelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
               unselectedLabelStyle: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.normal,
@@ -249,51 +296,63 @@ class _SettingsTabView extends StatelessWidget {
               overlayColor: WidgetStateProperty.all(Colors.transparent),
               tabs: [
                 Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.person_outline, size: 16),
-                      SizedBox(width: 4),
-                      Text('Profile'),
-                    ],
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.person_outline, size: 16),
+                        SizedBox(width: 4),
+                        Text('Profile'),
+                      ],
+                    ),
                   ),
                 ),
                 Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.notifications_outlined, size: 16),
-                      SizedBox(width: 4),
-                      Text('Notifs'),
-                    ],
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.notifications_outlined, size: 16),
+                        SizedBox(width: 4),
+                        Text('Notifs'),
+                      ],
+                    ),
                   ),
                 ),
                 Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.lock_outline, size: 16),
-                      SizedBox(width: 4),
-                      Text('Privacy'),
-                    ],
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.lock_outline, size: 16),
+                        SizedBox(width: 4),
+                        Text('Privacy'),
+                      ],
+                    ),
                   ),
                 ),
                 Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.palette_outlined, size: 16),
-                      SizedBox(width: 4),
-                      Text('Theme'),
-                    ],
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.palette_outlined, size: 16),
+                        SizedBox(width: 4),
+                        Text('Theme'),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // TabBarView content
           SizedBox(
             height: 300,
@@ -319,8 +378,12 @@ class _ProfileTab extends StatefulWidget {
 }
 
 class _ProfileTabState extends State<_ProfileTab> {
-  final TextEditingController fullNameController = TextEditingController(text: 'John Doe');
-  final TextEditingController emailController = TextEditingController(text: 'john@example.com');
+  final TextEditingController fullNameController = TextEditingController(
+    text: 'John Doe',
+  );
+  final TextEditingController emailController = TextEditingController(
+    text: 'john@example.com',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -346,7 +409,7 @@ class _ProfileTabState extends State<_ProfileTab> {
           ),
         ),
         SizedBox(height: 24),
-        
+
         // Full Name
         Text(
           'Full Name',
@@ -370,7 +433,7 @@ class _ProfileTabState extends State<_ProfileTab> {
           ),
         ),
         SizedBox(height: 16),
-        
+
         // Email
         Text(
           'Email',
@@ -440,7 +503,7 @@ class _NotificationsTabState extends State<_NotificationsTab> {
           ),
         ),
         SizedBox(height: 16),
-        
+
         // Notification Toggle Items
         _NotificationToggleItem(
           title: 'Lean Period Warning',
@@ -568,7 +631,7 @@ class _PrivacyTabState extends State<_PrivacyTab> {
           ),
         ),
         SizedBox(height: 16),
-        
+
         _NotificationToggleItem(
           title: 'Show Balance on Home',
           subtitle: 'Display your balance on the home screen',
@@ -628,7 +691,7 @@ class _AppearanceTabState extends State<_AppearanceTab> {
           ),
         ),
         SizedBox(height: 16),
-        
+
         // Theme Options
         _ThemeOption(
           title: 'Light',
@@ -682,7 +745,9 @@ class _ThemeOption extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.surface,
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? AppColors.primary : Colors.transparent,
@@ -701,13 +766,95 @@ class _ThemeOption extends StatelessWidget {
                 ),
               ),
             ),
-            if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: AppColors.primary,
-              ),
+            if (isSelected) Icon(Icons.check_circle, color: AppColors.primary),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SettingsNavButton extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _SettingsNavButton({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: AppColors.primary),
+        title: Text(title),
+        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+// ---------------- PLACEHOLDER PAGES ----------------
+
+class HelpSupportPage extends StatelessWidget {
+  const HelpSupportPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Help & Support')),
+      body: const Center(
+        child: Text('Placeholder Help & Support Page'),
+      ),
+    );
+  }
+}
+
+class TipsPage extends StatelessWidget {
+  const TipsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Tips')),
+      body: const Center(
+        child: Text('Placeholder Tips Page'),
+      ),
+    );
+  }
+}
+
+class SignInPage extends StatelessWidget {
+  const SignInPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sign In')),
+      body: const Center(
+        child: Text('Placeholder Sign In Page'),
+      ),
+    );
+  }
+}
+
+class SignUpPage extends StatelessWidget {
+  const SignUpPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sign Up')),
+      body: const Center(
+        child: Text('Placeholder Sign Up Page'),
       ),
     );
   }
