@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/colors.dart';
+import '../../help_support/presentation/pages/help_support_screen.dart';
+import '../../tips/presentation/pages/tips_screen.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -214,7 +216,7 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => HelpSupportPage()),
+                MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
               );
             },
           ),
@@ -227,7 +229,7 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => TipsPage()),
+                MaterialPageRoute(builder: (_) => const TipsScreen()),
               );
             },
           ),
@@ -803,34 +805,6 @@ class _SettingsNavButton extends StatelessWidget {
 }
 
 // ---------------- PLACEHOLDER PAGES ----------------
-
-class HelpSupportPage extends StatelessWidget {
-  const HelpSupportPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Help & Support')),
-      body: const Center(
-        child: Text('Placeholder Help & Support Page'),
-      ),
-    );
-  }
-}
-
-class TipsPage extends StatelessWidget {
-  const TipsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tips')),
-      body: const Center(
-        child: Text('Placeholder Tips Page'),
-      ),
-    );
-  }
-}
 
 class SignInPage extends StatelessWidget {
   const SignInPage({super.key});
