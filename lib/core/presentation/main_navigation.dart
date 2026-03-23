@@ -19,15 +19,12 @@ class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const PlaceholderScreen(screenName: 'Home'),
-    const IncomeScreen(),
-    const ExpenseScreen(),
-    const PlaceholderScreen(screenName: 'Profile'),
-    const PlaceholderScreen(screenName: 'Income'),
-    const PlaceholderScreen(screenName: 'Expense'),
-    const ProfilePage(),
-    const SettingsPage(),
-  ];
+  const PlaceholderScreen(screenName: 'Home'),
+  const IncomeScreen(),
+  const ExpenseScreen(),
+  const ProfilePage(),
+  const SettingsPage(),
+];
 
   final List<String?> _titles = [
     null,       // Home has no AppBar
