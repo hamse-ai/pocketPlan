@@ -1,4 +1,6 @@
-import '../widgets/faq_item.dart';
+import 'package:flutter/material.dart';
+import '../../../../core/theme/colors.dart';
+import '../../../../core/theme/textStyles.dart';
 
 class FaqItem extends StatelessWidget {
   final String question;
@@ -6,13 +8,13 @@ class FaqItem extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onTap;
 
-  const FaqItem(
-          question: _faqs[i],
-          answer: 'Placeholder answer for ${_faqs[i]}.',
-          isExpanded: _expandedIndex == i,
-          onTap: () => setState(() =>
-              _expandedIndex = _expandedIndex == i ? -1 : i),
-        );
+  const FaqItem({
+    super.key,
+    required this.question,
+    required this.answer,
+    required this.isExpanded,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

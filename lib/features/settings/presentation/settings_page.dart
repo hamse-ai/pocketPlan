@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/colors.dart';
+import '../../help_support/presentation/pages/help_support_screen.dart';
+import '../../education/presentation/pages/tips_screen.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -214,7 +216,7 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => HelpSupportPage()),
+                MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
               );
             },
           ),
@@ -227,7 +229,7 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => TipsPage()),
+                MaterialPageRoute(builder: (_) => const TipsScreen()),
               );
             },
           ),
