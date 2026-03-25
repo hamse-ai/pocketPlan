@@ -11,9 +11,13 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
+  // Ensure Flutter bindings are initialized before calling Firebase or GetIt
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  
+  // Initialize dependency injection
   await di.init();
+
   runApp(const PocketPlanApp());
 }
 
