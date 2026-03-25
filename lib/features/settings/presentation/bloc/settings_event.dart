@@ -18,3 +18,12 @@ class SaveSettingsEvent extends SettingsEvent {
   @override
   List<Object?> get props => [settings];
 }
+
+class UpdateSettingsEvent extends SettingsEvent {
+  final Settings settings;
+
+  const UpdateSettingsEvent(this.settings);
+
+  @override
+  List<Object?> get props => [settings];
+}
