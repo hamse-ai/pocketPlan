@@ -84,16 +84,11 @@ class SettingsPage extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   final bloc = context.read<SettingsBloc>();
+                  final state = bloc.state;
 
-                  final settings = Settings(
-                    autoSaveNotifications: true,
-                    weeklySummary: false,
-                    showBalance: true,
-                    shareAnalytics: false,
-                    theme: "Light",
-                  );
-
-                  bloc.add(SaveSettingsEvent(settings));
+                  if (state is SettingsLoaded) {
+                    bloc.add(SaveSettingsEvent(state.settings));
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -516,75 +511,56 @@ class _ProfileTabState extends State<_ProfileTab> {
 }
 
 // Notifications Tab
-class _NotificationsTab extends StatefulWidget {
-  @override
-  State<_NotificationsTab> createState() => _NotificationsTabState();
-}
-
-class _NotificationsTabState extends State<_NotificationsTab> {
-  bool toggle1 = true;
-  bool toggle2 = false;
-  bool toggle3 = true;
-
+class _NotificationsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        // Email Notifications Header
-        Text(
-          'Email Notifications',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Choose what updates you want to receive',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceSecondary,
-          ),
-        ),
-        SizedBox(height: 16),
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        if (state is! SettingsLoaded) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-        // Notification Toggle Items
-        _NotificationToggleItem(
-          title: 'Lean Period Warning',
-          subtitle: 'Get notified when balance may run low soon.',
-          value: toggle1,
-          onChanged: (value) {
-            setState(() {
-              toggle1 = value;
-            });
-          },
-        ),
-        SizedBox(height: 12),
-        _NotificationToggleItem(
-          title: 'Auto-Save Success Notifications',
-          subtitle: 'Get notified when you auto-save for emergency',
-          value: toggle2,
-          onChanged: (value) {
-            setState(() {
-              toggle2 = value;
-            });
-          },
-        ),
-        SizedBox(height: 12),
-        _NotificationToggleItem(
-          title: 'Weekly Money Summary',
-          subtitle: 'Get provided with weekly summaries',
-          value: toggle3,
-          onChanged: (value) {
-            setState(() {
-              toggle3 = value;
-            });
-          },
-        ),
-      ],
+        final settings = state.settings;
+
+        return ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Text(
+              'Email Notifications',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurface,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Choose what updates you want to receive',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurfaceSecondary,
+              ),
+            ),
+            SizedBox(height: 16),
+
+            _NotificationToggleItem(
+              title: 'Lean Period Warning',
+              subtitle: 'Get notified when balance may run low soon.',
+              value: settings.notificationsEnabled,
+              onChanged: (value) {
+                final newSettings = settings.copyWith(
+                  notificationsEnabled: value,
+                );
+
+                context.read<SettingsBloc>().add(
+                      UpdateSettingsEvent(newSettings),
+                    );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
