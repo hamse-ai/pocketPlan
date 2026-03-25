@@ -274,29 +274,7 @@ class SettingsPage extends StatelessWidget {
 
               SizedBox(height: 12),
 
-              _SettingsNavButton(
-                title: 'Sign In',
-                icon: Icons.login,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => SignInPage()),
-                  );
-                },
-              ),
-
-              SizedBox(height: 12),
-
-              _SettingsNavButton(
-                title: 'Sign Up',
-                icon: Icons.person_add,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => SignUpPage()),
-                  );
-                },
-              ),
+              
             ],
           ),
         ),

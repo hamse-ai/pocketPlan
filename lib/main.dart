@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pocket_plan/core/presentation/main_navigation.dart';
+import 'package:pocket_plan/core/presentation/auth_wrapper.dart';
 import 'injection_container.dart' as di;
 import 'core/theme/appTheme.dart';
 
@@ -23,8 +23,8 @@ class PocketPlanApp extends StatelessWidget {
       title: 'Pocket Plan',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainNavigation(),
+      // AuthWrapper handles routing between SignIn and MainNavigation
+      home: const AuthWrapper(),
     );
   }
 }
-
