@@ -29,6 +29,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         showBalance: settings.showBalance,
         shareAnalytics: settings.shareAnalytics,
         theme: settings.theme,
+        notificationsEnabled: settings.notificationsEnabled, // NEW FIELD
       );
 
       await localDataSource.saveSettings(model);
