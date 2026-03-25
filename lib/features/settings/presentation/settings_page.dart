@@ -5,278 +5,305 @@ import '../../../features/settings/presentation/bloc/settings_bloc.dart';
 import '../../../../injection_container.dart';
 import '../domain/entities/settings.dart';
 import '../presentation/bloc/settings_event.dart';
+import '../presentation/bloc/settings_state.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Show result using BlocListener
+    // Change BlocProvider → BlocProvider + BlocListener
     return BlocProvider(
       create: (_) => sl<SettingsBloc>()..add(LoadSettingsEvent()),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Settings Header Card
-            SizedBox(
-              width: double.infinity,
-              child: Card(
-                color: AppColors.primary,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Settings',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.onPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: 200,
-                        child: Text(
-                          'Manage your account and preference',
+      child: BlocListener<SettingsBloc, SettingsState>(
+        listener: (context, state) {
+          if (state is SettingsSaved) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("Settings saved")));
+          }
+
+          if (state is SettingsError) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Settings Header Card
+              SizedBox(
+                width: double.infinity,
+                child: Card(
+                  color: AppColors.primary,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Settings',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
                             color: AppColors.onPrimary,
                           ),
                         ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: 200,
+                          child: Text(
+                            'Manage your account and preference',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Tab Bar with rounded ends
+              _SettingsTabView(),
+
+              const SizedBox(height: 24),
+
+              // Save Preferences Button (only takes needed width)
+              ElevatedButton(
+                onPressed: () {
+                  final bloc = context.read<SettingsBloc>();
+
+                  final settings = Settings(
+                    autoSaveNotifications: true,
+                    weeklySummary: false,
+                    showBalance: true,
+                    shareAnalytics: false,
+                    theme: "Light",
+                  );
+
+                  bloc.add(SaveSettingsEvent(settings));
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.onPrimary,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Save Preferences',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Account Management Section (below tabs)
+              Text(
+                'Account Management',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.onSurface,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Manage your account and security',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.onSurfaceSecondary,
+                ),
+              ),
+              SizedBox(height: 16),
+
+              // Download My Data Button
+              SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
                       ),
                     ],
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Tab Bar with rounded ends
-            _SettingsTabView(),
-
-            const SizedBox(height: 24),
-
-            // Save Preferences Button (only takes needed width)
-            ElevatedButton(
-              onPressed: () {
-                final bloc = context.read<SettingsBloc>();
-
-                final settings = Settings(
-                  autoSaveNotifications: true,
-                  weeklySummary: false,
-                  showBalance: true,
-                  shareAnalytics: false ,
-                  theme: "Light",
-                );
-
-                bloc.add(SaveSettingsEvent(settings));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'Save Preferences',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Account Management Section (below tabs)
-            Text(
-              'Account Management',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Manage your account and security',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurfaceSecondary,
-              ),
-            ),
-            SizedBox(height: 16),
-
-            // Download My Data Button
-            SizedBox(
-              width: double.infinity,
-              child: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
+                  child: OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: AppColors.onPrimary,
+                      foregroundColor: AppColors.onSurface,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(color: AppColors.onSurface, width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: AppColors.onPrimary,
-                    foregroundColor: AppColors.onSurface,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: AppColors.onSurface, width: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    child: Text(
+                      'Download My Data',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  child: Text(
-                    'Download My Data',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+              SizedBox(height: 16),
+
+              // Change Password Button
+              SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: AppColors.onPrimary,
+                      foregroundColor: AppColors.onSurface,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(color: AppColors.onSurface, width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Change Password',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 16),
+              SizedBox(height: 16),
 
-            // Change Password Button
-            SizedBox(
-              width: double.infinity,
-              child: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: AppColors.onPrimary,
-                    foregroundColor: AppColors.onSurface,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: AppColors.onSurface, width: 2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+              // Delete Account Button
+              SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    'Change Password',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-
-            // Delete Account Button
-            SizedBox(
-              width: double.infinity,
-              child: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.delete,
+                      foregroundColor: AppColors.onDelete,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
                     ),
-                  ],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.delete,
-                    foregroundColor: AppColors.onDelete,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    child: Text(
+                      'Delete Account',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Delete Account',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 24),
+              SizedBox(height: 24),
 
-            Text(
-              'More',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
+              Text(
+                'More',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.onSurface,
+                ),
               ),
-            ),
 
-            SizedBox(height: 16),
+              SizedBox(height: 16),
 
-            _SettingsNavButton(
-              title: 'Help & Support',
-              icon: Icons.help_outline,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => HelpSupportPage()),
-                );
-              },
-            ),
+              _SettingsNavButton(
+                title: 'Help & Support',
+                icon: Icons.help_outline,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => HelpSupportPage()),
+                  );
+                },
+              ),
 
-            SizedBox(height: 12),
+              SizedBox(height: 12),
 
-            _SettingsNavButton(
-              title: 'Tips',
-              icon: Icons.lightbulb_outline,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => TipsPage()),
-                );
-              },
-            ),
+              _SettingsNavButton(
+                title: 'Tips',
+                icon: Icons.lightbulb_outline,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => TipsPage()),
+                  );
+                },
+              ),
 
-            SizedBox(height: 12),
+              SizedBox(height: 12),
 
-            _SettingsNavButton(
-              title: 'Sign In',
-              icon: Icons.login,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => SignInPage()),
-                );
-              },
-            ),
+              _SettingsNavButton(
+                title: 'Sign In',
+                icon: Icons.login,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => SignInPage()),
+                  );
+                },
+              ),
 
-            SizedBox(height: 12),
+              SizedBox(height: 12),
 
-            _SettingsNavButton(
-              title: 'Sign Up',
-              icon: Icons.person_add,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => SignUpPage()),
-                );
-              },
-            ),
-          ],
+              _SettingsNavButton(
+                title: 'Sign Up',
+                icon: Icons.person_add,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => SignUpPage()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
