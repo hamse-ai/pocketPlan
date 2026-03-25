@@ -7,6 +7,7 @@ class SettingsModel extends Settings {
     required super.showBalance,
     required super.shareAnalytics,
     required super.theme,
+    required super.notificationsEnabled, // NEW FIELD
   });
 
   factory SettingsModel.fromJson(Map<String, dynamic> json) {
@@ -16,6 +17,7 @@ class SettingsModel extends Settings {
       showBalance: json['showBalance'],
       shareAnalytics: json['shareAnalytics'],
       theme: json['theme'],
+      notificationsEnabled: json['notificationsEnabled'], // NEW FIELD
     );
   }
 
@@ -26,6 +28,7 @@ class SettingsModel extends Settings {
       'showBalance': showBalance,
       'shareAnalytics': shareAnalytics,
       'theme': theme,
+      'notificationsEnabled': notificationsEnabled, // NEW FIELD
     };
   }
 }
