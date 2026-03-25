@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../features/settings/presentation/bloc/settings_bloc.dart';
+import '../../../../injection_container.dart';
+import '../presentation/bloc/settings_event.dart';
+
+
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return BlocProvider(
+      create: (_) => sl<SettingsBloc>()..add(LoadSettingsEvent()),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Settings Header Card
           SizedBox(
             width: double.infinity,
@@ -258,6 +266,7 @@ class SettingsPage extends StatelessWidget {
             },
           ),
         ],
+      ),
       ),
     );
   }
