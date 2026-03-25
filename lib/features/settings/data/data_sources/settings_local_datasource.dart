@@ -22,6 +22,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
       showBalance: true,
       shareAnalytics: false,
       theme: "Light",
+      notificationsEnabled: true, // NEW FIELD - default to true
     );
 
     return _cachedSettings!;
