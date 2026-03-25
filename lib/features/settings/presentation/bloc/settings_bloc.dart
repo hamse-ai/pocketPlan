@@ -17,6 +17,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   }) : super(SettingsInitial()) {
     on<LoadSettingsEvent>(_onLoadSettings);
     on<SaveSettingsEvent>(_onSaveSettings);
+    on<UpdateSettingsEvent>(_onUpdateSettings);
   }
 
   Future<void> _onLoadSettings(
@@ -45,5 +46,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       (failure) => emit(SettingsError(failure.message)),
       (_) => emit(SettingsSaved()),
     );
+  }
+
+  Future<void> _onUpdateSettings(
+  UpdateSettingsEvent event,
+  Emitter<SettingsState> emit,
+  ) async {
+    emit(SettingsLoaded(event.settings));
   }
 }
