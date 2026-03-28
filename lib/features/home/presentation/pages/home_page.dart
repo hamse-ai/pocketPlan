@@ -27,8 +27,24 @@ class HomePage extends StatelessWidget {
 
             double currentBalance = totalIncome - totalExpense;
 
+            final now = DateTime.now();
+            final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+            final daysLeft = lastDayOfMonth.day - now.day + 1;
+            
+            // Assume 20% of income should be saved, or safe to spend is 80% of current balance
+            double safeToSpend = currentBalance > 0 ? (currentBalance * 0.8) : 0;
+
+            // Lean period logic: if average daily budget left is less than 3000 RWF
+            double dailyBudget = daysLeft > 0 ? currentBalance / daysLeft : 0;
+            bool isLeanPeriod = dailyBudget > 0 && dailyBudget < 3000;
+            if (currentBalance <= 0) {
+              isLeanPeriod = true;
+            }
+
+            final currentMonth = DateFormat('MMMM').format(now);
+
             return Scaffold(
-              backgroundColor: const Color(0xFFF2F4F3),
+               backgroundColor: const Color(0xFFF2F4F3),
               body: Column(
                 children: [
                   _buildHeader(),
@@ -39,10 +55,12 @@ class HomePage extends StatelessWidget {
                         children: [
                           _buildBalanceCard(currentBalance),
                           const SizedBox(height: 12),
-                          _buildSafeToSpendCard(),
+                          _buildSafeToSpendCard(safeToSpend, currentMonth),
                           const SizedBox(height: 12),
-                          _buildWarningBanner(),
-                          const SizedBox(height: 12),
+                          if (isLeanPeriod) ...[
+                            _buildWarningBanner(daysLeft),
+                            const SizedBox(height: 12),
+                          ],
                           _buildEmergencySavingCard(),
                           const SizedBox(height: 20),
                         ],
@@ -108,7 +126,7 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildBalanceCard(double balance) {
-    final currencyFormatter = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
+    final currencyFormatter = NumberFormat.currency(symbol: 'RWF ', decimalDigits: 0);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -153,7 +171,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSafeToSpendCard() {
+  Widget _buildSafeToSpendCard(double safeAmount, String monthName) {
+    final currencyFormatter = NumberFormat.currency(symbol: 'RWF ', decimalDigits: 0);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -166,8 +185,8 @@ class HomePage extends StatelessWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 'Safe to Spend',
                 style: TextStyle(
                   fontSize: 15,
@@ -175,19 +194,19 @@ class HomePage extends StatelessWidget {
                   color: Color(0xFF1B3A3A),
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'For January',
-                style: TextStyle(
+                'For $monthName',
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
                 ),
               ),
             ],
           ),
-          const Text(
-            '\$1,500',
-            style: TextStyle(
+          Text(
+            currencyFormatter.format(safeAmount),
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1B3A3A),
@@ -198,7 +217,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildWarningBanner() {
+  Widget _buildWarningBanner(int daysLeft) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -219,8 +238,8 @@ class HomePage extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
+              children: [
+                const Text(
                   'Lean Period Ahead',
                   style: TextStyle(
                     fontSize: 14,
@@ -228,10 +247,10 @@ class HomePage extends StatelessWidget {
                     color: Color(0xFFB71C1C),
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Try to reduce spending for the next 5 days',
-                  style: TextStyle(
+                  'Try to reduce spending for the next $daysLeft days',
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFFE53935),
                   ),
@@ -246,6 +265,7 @@ class HomePage extends StatelessWidget {
 
   Widget _buildEmergencySavingCard() {
     const double savedPercent = 0.80;
+    final currencyFormatter = NumberFormat.currency(symbol: 'RWF ', decimalDigits: 0);
 
     return Container(
       width: double.infinity,
@@ -259,8 +279,8 @@ class HomePage extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 'Current Emergency Saving',
                 style: TextStyle(
                   fontSize: 13,
@@ -268,8 +288,8 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               Text(
-                '\$400',
-                style: TextStyle(
+                currencyFormatter.format(400000), // Adjusted relative to 500k target
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1B3A3A),
@@ -289,11 +309,11 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
+            child: const LinearProgressIndicator(
               value: savedPercent,
               minHeight: 10,
-              backgroundColor: const Color(0xFFE0E0E0),
-              valueColor: const AlwaysStoppedAnimation<Color>(
+              backgroundColor: Color(0xFFE0E0E0),
+              valueColor: AlwaysStoppedAnimation<Color>(
                 Color(0xFF4CAF50),
               ),
             ),
@@ -301,14 +321,14 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 'Saved: 80%',
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
               Text(
-                'Target: \$500',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                'Target: ${currencyFormatter.format(500000)}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
