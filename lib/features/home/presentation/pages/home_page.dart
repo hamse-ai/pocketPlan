@@ -1,35 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pocket_plan/features/budget/presentation/bloc/expense_bloc.dart';
+import 'package:pocket_plan/features/income/presentation/bloc/income_bloc.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F3),
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+    return BlocBuilder<IncomeBloc, IncomeState>(
+      builder: (context, incomeState) {
+        return BlocBuilder<ExpenseBloc, ExpenseState>(
+          builder: (context, expenseState) {
+            double totalIncome = 0;
+            if (incomeState is IncomeLoaded) {
+              totalIncome = incomeState.transactions.fold(
+                  0, (sum, item) => sum + item.amount);
+            }
+
+            double totalExpense = 0;
+            if (expenseState is ExpenseLoaded) {
+              totalExpense = expenseState.transactions.fold(
+                  0, (sum, item) => sum + item.amount);
+            }
+
+            double currentBalance = totalIncome - totalExpense;
+
+            return Scaffold(
+              backgroundColor: const Color(0xFFF2F4F3),
+              body: Column(
                 children: [
-                  _buildBalanceCard(),
-                  const SizedBox(height: 12),
-                  _buildSafeToSpendCard(),
-                  const SizedBox(height: 12),
-                  _buildWarningBanner(),
-                  const SizedBox(height: 12),
-                  _buildEmergencySavingCard(),
-                  const SizedBox(height: 20),
+                  _buildHeader(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          _buildBalanceCard(currentBalance),
+                          const SizedBox(height: 12),
+                          _buildSafeToSpendCard(),
+                          const SizedBox(height: 12),
+                          _buildWarningBanner(),
+                          const SizedBox(height: 12),
+                          _buildEmergencySavingCard(),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-      // ✅ REMOVED bottomNavigationBar — handled by MainNavigation
+            );
+          },
+        );
+      },
     );
   }
 
@@ -82,7 +107,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceCard() {
+  Widget _buildBalanceCard(double balance) {
+    final currencyFormatter = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -101,9 +127,9 @@ class HomePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            '\$2,450',
-            style: TextStyle(
+          Text(
+            currencyFormatter.format(balance),
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 32,
               fontWeight: FontWeight.bold,
