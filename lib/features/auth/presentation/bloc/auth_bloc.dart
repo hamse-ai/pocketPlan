@@ -1,4 +1,4 @@
- import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/usecases/get_current_user.dart';
@@ -8,6 +8,7 @@ import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/sign_up_with_email.dart';
 import '../../domain/usecases/change_password.dart';
 import '../../domain/usecases/delete_account.dart';
+import '../../domain/usecases/send_password_reset_email.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -19,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final GetCurrentUser getCurrentUser;
   final ChangePassword changePassword;
   final DeleteAccount deleteAccount;
+  final SendPasswordResetEmail sendPasswordResetEmail;
 
   AuthBloc({
     required this.signInWithEmail,
@@ -28,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.getCurrentUser,
     required this.changePassword,
     required this.deleteAccount,
+    required this.sendPasswordResetEmail,
   }) : super(AuthInitial()) {
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
     on<SignInWithEmailEvent>(_onSignInWithEmail);
@@ -36,6 +39,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignOutEvent>(_onSignOut);
     on<ChangePasswordEvent>(_onChangePassword);
     on<DeleteAccountEvent>(_onDeleteAccount);
+    on<ForgotPasswordEvent>(_onForgotPassword);
   }
 
   Future<void> _onCheckAuthStatus(CheckAuthStatusEvent event, Emitter<AuthState> emit) async {
@@ -60,7 +64,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await signUpWithEmail(SignInParams(email: event.email, password: event.password));
     result.fold(
       (failure) => emit(AuthError(failure.message)),
-      (user) => emit(Authenticated(user)),
+      (_) => emit(const AuthSignUpSuccess(
+        'Account created! Please check your email to verify your account before logging in.',
+      )),
     );
   }
 
@@ -103,6 +109,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthError(failure.message)),
       (_) => emit(Unauthenticated()),
+    );
+  }
+
+  Future<void> _onForgotPassword(ForgotPasswordEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final result = await sendPasswordResetEmail(event.email);
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (_) => emit(const AuthPasswordResetSent('Password reset link sent! Check your inbox.')),
     );
   }
 }

@@ -12,6 +12,7 @@ import 'features/auth/domain/usecases/sign_out.dart';
 import 'features/auth/domain/usecases/sign_up_with_email.dart';
 import 'features/auth/domain/usecases/change_password.dart';
 import 'features/auth/domain/usecases/delete_account.dart';
+import 'features/auth/domain/usecases/send_password_reset_email.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 
 final sl = GetIt.instance;
@@ -28,6 +29,7 @@ Future<void> init() async {
       getCurrentUser: sl(),
       changePassword: sl(),
       deleteAccount: sl(),
+      sendPasswordResetEmail: sl(),
     ),
   );
 
@@ -39,6 +41,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
   sl.registerLazySingleton(() => ChangePassword(sl()));
   sl.registerLazySingleton(() => DeleteAccount(sl()));
+  sl.registerLazySingleton(() => SendPasswordResetEmail(sl()));
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(

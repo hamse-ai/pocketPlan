@@ -8,12 +8,13 @@ import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> signInWithEmail({required String email, required String password});
-  Future<UserModel> signUpWithEmail({required String email, required String password});
+  Future<void> signUpWithEmail({required String email, required String password});
   Future<UserModel> signInWithGoogle();
   Future<void> signOut();
   Future<UserModel> getCurrentUser();
   Future<void> changePassword(String newPassword);
   Future<void> deleteAccount();
+  Future<void> sendPasswordResetEmail(String email);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -33,6 +34,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         password: password,
       );
       if (userCredential.user != null) {
+        if (!userCredential.user!.emailVerified) {
+          await userCredential.user!.sendEmailVerification();
+          await firebaseAuth.signOut();
+          throw const AuthFailure('Please verify your email address. A fresh verification link has been sent to your inbox.');
+        }
         return UserModel.fromFirebaseUser(userCredential.user!);
       } else {
         throw const AuthFailure('User not found.');
@@ -55,20 +61,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> signUpWithEmail({required String email, required String password}) async {
+  Future<void> signUpWithEmail({required String email, required String password}) async {
     try {
       final userCredential = await firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
       if (userCredential.user != null) {
-        return UserModel.fromFirebaseUser(userCredential.user!);
-      } else {
-        throw const AuthFailure('Failed to create account.');
+        await userCredential.user!.sendEmailVerification();
+        await firebaseAuth.signOut();
+        return;
       }
+      throw const AuthFailure('Failed to create account.');
     } on FirebaseAuthException catch (e) {
       throw AuthFailure(e.message ?? 'Sign up failed.');
     } catch (e) {
+      if (e is AuthFailure) rethrow;
       throw const ServerFailure('An unexpected error occurred.');
     }
   }
@@ -156,6 +164,23 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
     } else {
       throw const AuthFailure('No user logged in.');
+    }
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = e.message ?? 'Failed to send reset email.';
+      if (e.code == 'user-not-found') {
+        errorMessage = 'No account found with this email.';
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'The email address is badly formatted.';
+      }
+      throw AuthFailure(errorMessage);
+    } catch (e) {
+      throw const ServerFailure('An unexpected error occurred.');
     }
   }
 }

@@ -31,16 +31,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> signUpWithEmail({
+  Future<Either<Failure, void>> signUpWithEmail({
     required String email,
     required String password,
   }) async {
     try {
-      final userModel = await remoteDataSource.signUpWithEmail(
+      await remoteDataSource.signUpWithEmail(
         email: email,
         password: password,
       );
-      return Right(userModel);
+      return const Right(null);
     } on AuthFailure catch (e) {
       return Left(e);
     } on ServerFailure catch (e) {
@@ -106,6 +106,20 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> deleteAccount() async {
     try {
       await remoteDataSource.deleteAccount();
+      return const Right(null);
+    } on AuthFailure catch (e) {
+      return Left(e);
+    } on ServerFailure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return const Left(ServerFailure('An unexpected error occurred.'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> sendPasswordResetEmail(String email) async {
+    try {
+      await remoteDataSource.sendPasswordResetEmail(email);
       return const Right(null);
     } on AuthFailure catch (e) {
       return Left(e);

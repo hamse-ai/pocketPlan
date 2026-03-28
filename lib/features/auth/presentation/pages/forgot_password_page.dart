@@ -7,30 +7,27 @@ import '../bloc/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/custom_button.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+class ForgotPasswordPage extends StatefulWidget {
+  const ForgotPasswordPage({super.key});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
-  void _onSignUpPressed() {
+  void _onResetPressed() {
     if (_formKey.currentState!.validate()) {
-      context.read<AuthBloc>().add(SignUpWithEmailEvent(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
+      context.read<AuthBloc>().add(ForgotPasswordEvent(
+            _emailController.text.trim(),
           ));
     }
   }
@@ -38,28 +35,37 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
+      appBar: AppBar(title: const Text('Reset Password')),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Error', style: TextStyle(color: Colors.red)),
+                content: Text(state.message),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
             );
-          } else if (state is AuthSignUpSuccess) {
+          } else if (state is AuthPasswordResetSent) {
             showDialog(
               context: context,
               barrierDismissible: false,
               builder: (ctx) => AlertDialog(
-                title: const Text('Check your email', style: TextStyle(color: Colors.green)),
+                title: const Text('Success', style: TextStyle(color: Colors.green)),
                 content: Text(state.message),
                 actions: [
                   TextButton(
                     onPressed: () {
-                      Navigator.of(ctx).pop();
-                      context.read<AuthBloc>().add(CheckAuthStatusEvent());
-                      Navigator.of(context).pop();
+                      Navigator.of(ctx).pop(); // close dialog
+                      Navigator.of(context).pop(); // pop back to Login
                     },
-                    child: const Text('Back to Login'),
+                    child: const Text('Return to Login'),
                   ),
                 ],
               ),
@@ -77,9 +83,15 @@ class _SignupPageState extends State<SignupPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Text(
-                      'Create Account',
+                      'Forgot Password?',
                       style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Enter your email address and we will send you a link to reset your password.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     const SizedBox(height: 48),
                     AuthTextField(
@@ -88,7 +100,7 @@ class _SignupPageState extends State<SignupPage> {
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter an email';
+                          return 'Please enter your email';
                         }
                         if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                           return 'Please enter a valid email address';
@@ -96,31 +108,10 @@ class _SignupPageState extends State<SignupPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
-                    AuthTextField(
-                      hintText: 'Password',
-                      controller: _passwordController,
-                      obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a password';
-                        }
-                        if (value.length < 8) {
-                          return 'Password must be at least 8 characters';
-                        }
-                        if (!value.contains(RegExp(r'[A-Z]'))) {
-                          return 'Must contain at least one uppercase letter';
-                        }
-                        if (!value.contains(RegExp(r'[0-9]'))) {
-                          return 'Must contain at least one number';
-                        }
-                        return null;
-                      },
-                    ),
                     const SizedBox(height: 24),
                     CustomButton(
-                      text: 'Sign Up',
-                      onPressed: _onSignUpPressed,
+                      text: 'Send Reset Link',
+                      onPressed: _onResetPressed,
                       isLoading: state is AuthLoading,
                     ),
                   ],

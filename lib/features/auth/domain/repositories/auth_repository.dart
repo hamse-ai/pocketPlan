@@ -8,7 +8,7 @@ abstract class AuthRepository {
     required String password,
   });
 
-  Future<Either<Failure, UserEntity>> signUpWithEmail({
+  Future<Either<Failure, void>> signUpWithEmail({
     required String email,
     required String password,
   });
@@ -22,4 +22,6 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> changePassword(String newPassword);
 
   Future<Either<Failure, void>> deleteAccount();
+
+  Future<Either<Failure, void>> sendPasswordResetEmail(String email);
 }

@@ -5,6 +5,7 @@ class AuthTextField extends StatelessWidget {
   final bool obscureText;
   final TextEditingController controller;
   final TextInputType keyboardType;
+  final String? Function(String?)? validator;
 
   const AuthTextField({
     super.key,
@@ -12,6 +13,7 @@ class AuthTextField extends StatelessWidget {
     required this.controller,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
+    this.validator,
   });
 
   @override
@@ -27,7 +29,7 @@ class AuthTextField extends StatelessWidget {
         ),
         filled: true,
       ),
-      validator: (value) {
+      validator: validator ?? (value) {
         if (value == null || value.isEmpty) {
           return 'Please enter $hintText';
         }
