@@ -46,9 +46,22 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Login Failed', style: TextStyle(color: Colors.red)),
+                content: Text(state.message),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
             );
+          } else if (state is Authenticated) {
+            // Pop the specific login page route if it was pushed onto the stack
+            Navigator.of(context).popUntil((route) => route.isFirst);
           }
         },
         builder: (context, state) {

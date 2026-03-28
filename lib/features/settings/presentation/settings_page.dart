@@ -1,10 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/colors.dart';
+import '../../auth/presentation/pages/login_page.dart';
+import '../../auth/presentation/pages/signup_page.dart';
+import '../../auth/presentation/bloc/auth_bloc.dart';
+import '../../auth/presentation/bloc/auth_event.dart';
 import '../../help_support/presentation/pages/help_support_screen.dart';
 import '../../education/presentation/pages/tips_screen.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
+
+  Future<void> _showChangePasswordDialog(BuildContext context) async {
+    final passwordController = TextEditingController();
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change Password'),
+        content: TextField(
+          controller: passwordController,
+          obscureText: true,
+          decoration: const InputDecoration(labelText: 'New Password'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final newPassword = passwordController.text.trim();
+              if (newPassword.isNotEmpty) {
+                context.read<AuthBloc>().add(ChangePasswordEvent(newPassword));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Changing password...')),
+                );
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showDeleteAccountDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<AuthBloc>().add(DeleteAccountEvent());
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +208,7 @@ class SettingsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () => _showChangePasswordDialog(context),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: AppColors.onPrimary,
                   foregroundColor: AppColors.onSurface,
@@ -180,7 +242,7 @@ class SettingsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () => _showDeleteAccountDialog(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.delete,
                   foregroundColor: AppColors.onDelete,
@@ -242,7 +304,7 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => SignInPage()),
+                MaterialPageRoute(builder: (_) => const LoginPage()),
               );
             },
           ),
@@ -255,8 +317,18 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => SignUpPage()),
+                MaterialPageRoute(builder: (_) => const SignupPage()),
               );
+            },
+          ),
+          
+          SizedBox(height: 12),
+          
+          _SettingsNavButton(
+            title: 'Sign Out',
+            icon: Icons.logout,
+            onTap: () {
+              context.read<AuthBloc>().add(SignOutEvent());
             },
           ),
         ],
@@ -829,34 +901,6 @@ class TipsPage extends StatelessWidget {
       appBar: AppBar(title: const Text('Tips')),
       body: const Center(
         child: Text('Placeholder Tips Page'),
-      ),
-    );
-  }
-}
-
-class SignInPage extends StatelessWidget {
-  const SignInPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: const Center(
-        child: Text('Placeholder Sign In Page'),
-      ),
-    );
-  }
-}
-
-class SignUpPage extends StatelessWidget {
-  const SignUpPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
-      body: const Center(
-        child: Text('Placeholder Sign Up Page'),
       ),
     );
   }

@@ -32,3 +32,14 @@ class SignUpWithEmailEvent extends AuthEvent {
 class SignInWithGoogleEvent extends AuthEvent {}
 
 class SignOutEvent extends AuthEvent {}
+
+class ChangePasswordEvent extends AuthEvent {
+  final String newPassword;
+  
+  const ChangePasswordEvent(this.newPassword);
+
+  @override
+  List<Object> get props => [newPassword];
+}
+
+class DeleteAccountEvent extends AuthEvent {}

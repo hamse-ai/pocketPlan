@@ -10,6 +10,8 @@ import 'features/auth/domain/usecases/sign_in_with_email.dart';
 import 'features/auth/domain/usecases/sign_in_with_google.dart';
 import 'features/auth/domain/usecases/sign_out.dart';
 import 'features/auth/domain/usecases/sign_up_with_email.dart';
+import 'features/auth/domain/usecases/change_password.dart';
+import 'features/auth/domain/usecases/delete_account.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 
 final sl = GetIt.instance;
@@ -24,6 +26,8 @@ Future<void> init() async {
       signInWithGoogle: sl(),
       signOut: sl(),
       getCurrentUser: sl(),
+      changePassword: sl(),
+      deleteAccount: sl(),
     ),
   );
 
@@ -33,6 +37,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SignInWithGoogle(sl()));
   sl.registerLazySingleton(() => SignOut(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
+  sl.registerLazySingleton(() => ChangePassword(sl()));
+  sl.registerLazySingleton(() => DeleteAccount(sl()));
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(

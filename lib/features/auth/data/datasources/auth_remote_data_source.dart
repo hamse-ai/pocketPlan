@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
 
 import '../../../../core/error/failures.dart';
@@ -11,6 +12,8 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> signInWithGoogle();
   Future<void> signOut();
   Future<UserModel> getCurrentUser();
+  Future<void> changePassword(String newPassword);
+  Future<void> deleteAccount();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -35,7 +38,17 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw const AuthFailure('User not found.');
       }
     } on FirebaseAuthException catch (e) {
-      throw AuthFailure(e.message ?? 'Authentication failed.');
+      String errorMessage = e.message ?? 'Authentication failed.';
+      if (e.code == 'user-not-found') {
+        errorMessage = 'No account found with this email.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Incorrect password. Please try again.';
+      } else if (e.code == 'invalid-credential') {
+        errorMessage = 'Invalid email or password.';
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'The email address is badly formatted.';
+      }
+      throw AuthFailure(errorMessage);
     } catch (e) {
       throw const ServerFailure('An unexpected error occurred.');
     }
@@ -82,18 +95,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
     } on FirebaseAuthException catch (e) {
        throw AuthFailure(e.message ?? 'Google sign in failed.');
+    } on PlatformException catch (e) {
+       throw AuthFailure('Google Sign-In Error: ${e.message} (Code: ${e.code})');
     } catch (e) {
-      throw const ServerFailure('An unexpected error occurred.');
+      throw ServerFailure('An unexpected error occurred: ${e.toString()}');
     }
   }
 
   @override
   Future<void> signOut() async {
     try {
-      await Future.wait([
-        firebaseAuth.signOut(),
-        googleSignIn.signOut(),
-      ]);
+      await firebaseAuth.signOut();
+      try {
+        await googleSignIn.signOut();
+      } catch (_) {
+        // Ignore Google Sign In errors (e.g., if never signed in via Google)
+      }
     } catch (e) {
       throw const ServerFailure('Failed to sign out.');
     }
@@ -104,6 +121,39 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final user = firebaseAuth.currentUser;
     if (user != null) {
       return UserModel.fromFirebaseUser(user);
+    } else {
+      throw const AuthFailure('No user logged in.');
+    }
+  }
+
+  @override
+  Future<void> changePassword(String newPassword) async {
+    final user = firebaseAuth.currentUser;
+    if (user != null) {
+      try {
+        await user.updatePassword(newPassword);
+      } on FirebaseAuthException catch (e) {
+        throw AuthFailure(e.message ?? 'Failed to update password.');
+      } catch (e) {
+        throw const ServerFailure('An unexpected error occurred.');
+      }
+    } else {
+      throw const AuthFailure('No user logged in.');
+    }
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    final user = firebaseAuth.currentUser;
+    if (user != null) {
+      try {
+        await user.delete();
+      } on FirebaseAuthException catch (e) {
+        // May require re-authentication if credentials are too old.
+        throw AuthFailure(e.message ?? 'Failed to delete account. You may need to sign in again first.');
+      } catch (e) {
+        throw const ServerFailure('An unexpected error occurred.');
+      }
     } else {
       throw const AuthFailure('No user logged in.');
     }

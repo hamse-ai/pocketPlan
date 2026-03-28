@@ -87,4 +87,32 @@ class AuthRepositoryImpl implements AuthRepository {
        return const Left(ServerFailure('No authenticated user found.'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> changePassword(String newPassword) async {
+    try {
+      await remoteDataSource.changePassword(newPassword);
+      return const Right(null);
+    } on AuthFailure catch (e) {
+      return Left(e);
+    } on ServerFailure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return const Left(ServerFailure('An unexpected error occurred.'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteAccount() async {
+    try {
+      await remoteDataSource.deleteAccount();
+      return const Right(null);
+    } on AuthFailure catch (e) {
+      return Left(e);
+    } on ServerFailure catch (e) {
+      return Left(e);
+    } catch (e) {
+      return const Left(ServerFailure('An unexpected error occurred.'));
+    }
+  }
 }
