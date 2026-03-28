@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/usecases/get_settings.dart';
 import '../../domain/usecases/save_settings.dart';
+import '../../domain/usecases/account_management_usecases.dart';
 
 import 'settings_event.dart';
 import 'settings_state.dart';
@@ -9,14 +10,23 @@ import 'settings_state.dart';
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final GetSettings getSettings;
   final SaveSettings saveSettings;
+  final ChangePassword changePassword;
+  final DeleteAccount deleteAccount;
+  final DownloadUserData downloadUserData;
 
   SettingsBloc({
     required this.getSettings,
     required this.saveSettings,
+    required this.changePassword,
+    required this.deleteAccount,
+    required this.downloadUserData,
   }) : super(SettingsInitial()) {
     on<LoadSettingsEvent>(_onLoadSettings);
     on<SaveSettingsEvent>(_onSaveSettings);
     on<UpdateSettingsEvent>(_onUpdateSettings);
+    on<ChangePasswordEvent>(_onChangePassword);
+    on<DeleteAccountEvent>(_onDeleteAccount);
+    on<DownloadUserDataEvent>(_onDownloadUserData);
   }
 
   Future<void> _onLoadSettings(
@@ -37,8 +47,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     SaveSettingsEvent event,
     Emitter<SettingsState> emit,
   ) async {
-    // Keep a reference to the current settings so we can restore
-    // SettingsLoaded after the save — otherwise the UI loses its state.
     final currentSettings = event.settings;
 
     emit(SettingsLoading());
@@ -47,14 +55,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
     result.fold(
       (failure) {
-        // On failure, restore the loaded state so the user's changes aren't
-        // wiped from the screen.
         emit(SettingsLoaded(currentSettings));
         emit(SettingsError(failure.message));
       },
       (_) {
-        // Signal success briefly, then immediately restore SettingsLoaded
-        // so tabs that depend on SettingsLoaded keep rendering correctly.
         emit(SettingsSaved());
         emit(SettingsLoaded(currentSettings));
       },
@@ -65,8 +69,56 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     UpdateSettingsEvent event,
     Emitter<SettingsState> emit,
   ) async {
-    // Instantly reflect toggle/selection changes in the UI without
-    // touching the data layer.
+    // Instantly reflect toggle/selection changes in the UI
     emit(SettingsLoaded(event.settings));
+  }
+
+  Future<void> _onChangePassword(
+    ChangePasswordEvent event,
+    Emitter<SettingsState> emit,
+  ) async {
+    emit(PasswordChanging());
+
+    final result = await changePassword(
+      ChangePasswordParams(
+        currentPassword: event.currentPassword,
+        newPassword: event.newPassword,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(SettingsError(failure.message)),
+      (_) => emit(PasswordChanged()),
+    );
+  }
+
+  Future<void> _onDeleteAccount(
+    DeleteAccountEvent event,
+    Emitter<SettingsState> emit,
+  ) async {
+    emit(AccountDeleting());
+
+    final result = await deleteAccount(
+      DeleteAccountParams(password: event.password),
+    );
+
+    result.fold(
+      (failure) => emit(SettingsError(failure.message)),
+      (_) => emit(AccountDeleted()),
+    );
+  }
+
+  Future<void> _onDownloadUserData(
+    DownloadUserDataEvent event,
+    Emitter<SettingsState> emit,
+  ) async {
+    emit(DataDownloading());
+
+    final result = await downloadUserData(NoParams());
+
+    result.fold(
+      (failure) => emit(SettingsError(failure.message)),
+      (data) => emit(DataDownloaded(data)),
+    );
   }
 }

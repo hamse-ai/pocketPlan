@@ -31,3 +31,28 @@ class SettingsError extends SettingsState {
   @override
   List<Object?> get props => [message];
 }
+
+// ── Password Change States ──────────────────────────────────────────────────
+
+class PasswordChanging extends SettingsState {}
+
+class PasswordChanged extends SettingsState {}
+
+// ── Account Deletion States ─────────────────────────────────────────────────
+
+class AccountDeleting extends SettingsState {}
+
+class AccountDeleted extends SettingsState {}
+
+// ── Data Download States ────────────────────────────────────────────────────
+
+class DataDownloading extends SettingsState {}
+
+class DataDownloaded extends SettingsState {
+  final Map<String, dynamic> data;
+
+  const DataDownloaded(this.data);
+
+  @override
+  List<Object?> get props => [data];
+}

@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/theme/colors.dart';
-import '../../../../injection_container.dart';
-import '../domain/entities/settings.dart';
 import '../presentation/bloc/settings_bloc.dart';
 import '../presentation/bloc/settings_event.dart';
 import '../presentation/bloc/settings_state.dart';
@@ -12,18 +12,35 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<SettingsBloc>()..add(LoadSettingsEvent()),
-      child: BlocListener<SettingsBloc, SettingsState>(
+    final cs = Theme.of(context).colorScheme;
+    return BlocListener<SettingsBloc, SettingsState>(
         listener: (context, state) {
           if (state is SettingsSaved) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Settings saved')),
+              const SnackBar(content: Text('Settings saved successfully')),
             );
+          }
+          if (state is PasswordChanged) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Password changed successfully')),
+            );
+          }
+          if (state is AccountDeleted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Account deleted successfully')),
+            );
+            // Navigate to login screen
+            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+          }
+          if (state is DataDownloaded) {
+            _handleDataDownload(context, state.data);
           }
           if (state is SettingsError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -36,7 +53,7 @@ class SettingsPage extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: Card(
-                  color: AppColors.primary,
+                  color: cs.primary,
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -46,22 +63,22 @@ class SettingsPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Settings',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.onPrimary,
+                            color: cs.onPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
                         SizedBox(
                           width: 200,
-                          child: const Text(
-                            'Manage your account and preference',
+                          child: Text(
+                            'Manage your account and preferences',
                             style: TextStyle(
                               fontSize: 16,
-                              color: AppColors.onPrimary,
+                              color: cs.onPrimary,
                             ),
                           ),
                         ),
@@ -92,8 +109,8 @@ class SettingsPage extends StatelessWidget {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.onPrimary,
+                      backgroundColor: cs.primary,
+                      foregroundColor: cs.onPrimary,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 12),
                       shape: RoundedRectangleBorder(
@@ -101,12 +118,12 @@ class SettingsPage extends StatelessWidget {
                       ),
                     ),
                     child: isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 18,
                             width: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: AppColors.onPrimary,
+                              color: cs.onPrimary,
                             ),
                           )
                         : const Text(
@@ -121,21 +138,21 @@ class SettingsPage extends StatelessWidget {
               const SizedBox(height: 32),
 
               // ── Account management ───────────────────────────────────────
-              const Text(
+              Text(
                 'Account Management',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.onSurface,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Manage your account and security',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.onSurfaceSecondary,
+                  color: cs.onSurface.withValues(alpha: 0.65),
                 ),
               ),
               const SizedBox(height: 16),
@@ -144,7 +161,7 @@ class SettingsPage extends StatelessWidget {
               _AccountButton(
                 label: 'Download My Data',
                 onPressed: () {
-                  // TODO: implement data export
+                  context.read<SettingsBloc>().add(DownloadUserDataEvent());
                 },
               ),
               const SizedBox(height: 16),
@@ -153,7 +170,7 @@ class SettingsPage extends StatelessWidget {
               _AccountButton(
                 label: 'Change Password',
                 onPressed: () {
-                  // TODO: wire up Firebase password change
+                  _showChangePasswordDialog(context);
                 },
               ),
               const SizedBox(height: 16),
@@ -165,7 +182,7 @@ class SettingsPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
+                        color: Colors.black.withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -174,7 +191,7 @@ class SettingsPage extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      // TODO: wire up Firebase account deletion
+                      _showDeleteAccountDialog(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.delete,
@@ -196,12 +213,12 @@ class SettingsPage extends StatelessWidget {
               const SizedBox(height: 24),
 
               // ── More ─────────────────────────────────────────────────────
-              const Text(
+              Text(
                 'More',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.onSurface,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 16),
@@ -227,6 +244,134 @@ class SettingsPage extends StatelessWidget {
             ],
           ),
         ),
+    );
+  }
+
+  void _handleDataDownload(BuildContext context, Map<String, dynamic> data) {
+    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+    
+    Share.share(
+      jsonString,
+      subject: 'My Pocket Plan Data',
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Data ready to share or save')),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Change Password'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: currentPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Current Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: newPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'New Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: confirmPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Confirm New Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (newPasswordController.text != confirmPasswordController.text) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Passwords do not match')),
+                );
+                return;
+              }
+
+              context.read<SettingsBloc>().add(
+                    ChangePasswordEvent(
+                      currentPassword: currentPasswordController.text,
+                      newPassword: newPasswordController.text,
+                    ),
+                  );
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Change Password'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    final passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'This action cannot be undone. All your data will be permanently deleted.',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(
+                labelText: 'Confirm Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.delete,
+            ),
+            onPressed: () {
+              context.read<SettingsBloc>().add(
+                    DeleteAccountEvent(password: passwordController.text),
+                  );
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Delete Account'),
+          ),
+        ],
       ),
     );
   }
@@ -239,99 +384,42 @@ class _SettingsTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return DefaultTabController(
       length: 4,
       child: Column(
         children: [
           Container(
             height: 48,
-            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(25),
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(8),
             ),
             child: TabBar(
               indicator: BoxDecoration(
-                color: AppColors.onPrimary,
-                borderRadius: BorderRadius.circular(25),
+                color: cs.primary,
+                borderRadius: BorderRadius.circular(8),
               ),
-              labelColor: AppColors.onSurface,
-              unselectedLabelColor: AppColors.onSurfaceSecondary,
-              labelStyle:
-                  const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.normal,
-              ),
+              labelColor: cs.onPrimary,
+              unselectedLabelColor: cs.onSurface,
               dividerColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.tab,
-              splashFactory: NoSplash.splashFactory,
-              overlayColor: WidgetStateProperty.all(Colors.transparent),
               tabs: const [
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.person_outline, size: 16),
-                        SizedBox(width: 4),
-                        Text('Profile'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.notifications_outlined, size: 16),
-                        SizedBox(width: 4),
-                        Text('Notifs'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.lock_outline, size: 16),
-                        SizedBox(width: 4),
-                        Text('Privacy'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.palette_outlined, size: 16),
-                        SizedBox(width: 4),
-                        Text('Theme'),
-                      ],
-                    ),
-                  ),
-                ),
+                Tab(text: 'General'),
+                Tab(text: 'Notifications'),
+                Tab(text: 'Privacy'),
+                Tab(text: 'Appearance'),
               ],
             ),
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 300,
+            height: 400,
             child: TabBarView(
               children: [
-                _ProfileTab(),
-                _NotificationsTab(),
-                _PrivacyTab(),
-                _AppearanceTab(),
+                const _GeneralTab(),
+                const _NotificationsTab(),
+                const _PrivacyTab(),
+                const _AppearanceTab(),
               ],
             ),
           ),
@@ -341,172 +429,143 @@ class _SettingsTabView extends StatelessWidget {
   }
 }
 
-// ── Profile tab ───────────────────────────────────────────────────────────────
-//
-// The text controllers are seeded from BLoC state (settings.userName /
-// settings.email).  Right now those will be empty strings because Firebase
-// isn't wired yet.  Once the auth teammate exposes user data, just populate
-// those two fields on the Settings entity and this tab will display them
-// automatically with zero changes here.
+// ── Individual Tab Implementations ────────────────────────────────────────────
 
-class _ProfileTab extends StatefulWidget {
-  @override
-  State<_ProfileTab> createState() => _ProfileTabState();
-}
-
-class _ProfileTabState extends State<_ProfileTab> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _emailController;
-
-  bool _initialised = false;
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  void _initControllers(Settings settings) {
-    if (_initialised) return;
-    _nameController = TextEditingController(text: settings.userName);
-    _emailController = TextEditingController(text: settings.email);
-    _initialised = true;
-  }
+class _GeneralTab extends StatelessWidget {
+  const _GeneralTab();
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<SettingsBloc, SettingsState>(
-      // Only rebuild when the profile fields actually change, not on every
-      // toggle update in another tab.
-      buildWhen: (prev, curr) {
-        if (curr is! SettingsLoaded) return true;
-        if (prev is! SettingsLoaded) return true;
-        return prev.settings.userName != curr.settings.userName ||
-            prev.settings.email != curr.settings.email;
-      },
-      listenWhen: (_, curr) => curr is SettingsLoaded,
-      listener: (context, state) {
-        if (state is SettingsLoaded) {
-          // Sync controllers whenever the BLoC pushes fresh data (e.g. after
-          // Firebase loads the real profile).
-          if (_initialised) {
-            _nameController.text = state.settings.userName;
-            _emailController.text = state.settings.email;
-          }
-        }
-      },
+    final cs = Theme.of(context).colorScheme;
+    return BlocBuilder<SettingsBloc, SettingsState>(
       builder: (context, state) {
-        if (state is SettingsLoading || state is SettingsInitial) {
+        if (state is! SettingsLoaded) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state is SettingsLoaded) {
-          _initControllers(state.settings);
-        }
+        final settings = state.settings;
 
-        if (state is SettingsError) {
-          return Center(child: Text(state.message));
-        }
-
-        return ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const Text(
-              'Profile',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Update your personal information',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurfaceSecondary,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Full Name
-            const Text(
-              'Full Name',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                hintText: 'Enter your full name',
-                filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Account Information',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
                 ),
               ),
-              onChanged: (value) {
-                // Keep BLoC in sync as the user types so Save picks it up.
-                final bloc = context.read<SettingsBloc>();
-                final current = bloc.state;
-                if (current is SettingsLoaded) {
-                  bloc.add(UpdateSettingsEvent(
-                    current.settings.copyWith(userName: value),
-                  ));
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Email
-            const Text(
-              'Email',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                hintText: 'user@example.com',
-                filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(
+              const SizedBox(height: 12),
+              
+              // User Name Display
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.person_outline, color: cs.onSurface),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Name',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: cs.onSurface.withValues(alpha: 0.65),
+                            ),
+                          ),
+                          Text(
+                            settings.userName.isEmpty ? 'Not set' : settings.userName,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              onChanged: (value) {
-                final bloc = context.read<SettingsBloc>();
-                final current = bloc.state;
-                if (current is SettingsLoaded) {
-                  bloc.add(UpdateSettingsEvent(
-                    current.settings.copyWith(email: value),
-                  ));
-                }
-              },
-            ),
-          ],
+              const SizedBox(height: 12),
+
+              // Email Display
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cs.surface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.email_outlined, color: cs.onSurface),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Email',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: cs.onSurface.withValues(alpha: 0.65),
+                            ),
+                          ),
+                          Text(
+                            settings.email.isEmpty ? 'Not set' : settings.email,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              Text(
+                'Preferences',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              _NotificationToggleItem(
+                title: 'Show Balance',
+                subtitle: 'Display balance on home screen',
+                value: settings.showBalance,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(showBalance: value),
+                        ),
+                      );
+                },
+              ),
+            ],
+          ),
         );
       },
     );
   }
 }
-
-// ── Notifications tab ─────────────────────────────────────────────────────────
 
 class _NotificationsTab extends StatelessWidget {
+  const _NotificationsTab();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(
@@ -517,79 +576,59 @@ class _NotificationsTab extends StatelessWidget {
 
         final settings = state.settings;
 
-        return ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const Text(
-              'Email Notifications',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _NotificationToggleItem(
+                title: 'Enable Notifications',
+                subtitle: 'Receive app notifications',
+                value: settings.notificationsEnabled,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(notificationsEnabled: value),
+                        ),
+                      );
+                },
               ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Choose what updates you want to receive',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurfaceSecondary,
+              const SizedBox(height: 16),
+              _NotificationToggleItem(
+                title: 'Auto-Save Notifications',
+                subtitle: 'Get notified when transactions are saved',
+                value: settings.autoSaveNotifications,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(autoSaveNotifications: value),
+                        ),
+                      );
+                },
               ),
-            ),
-            const SizedBox(height: 16),
-
-            _NotificationToggleItem(
-              title: 'Lean Period Warning',
-              subtitle: 'Get notified when balance may run low soon.',
-              value: settings.notificationsEnabled,
-              onChanged: (value) {
-                context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(
-                        settings.copyWith(notificationsEnabled: value),
-                      ),
-                    );
-              },
-            ),
-            const SizedBox(height: 12),
-            _NotificationToggleItem(
-              title: 'Auto-save Notifications',
-              subtitle: 'Receive alerts for automatic savings actions.',
-              value: settings.autoSaveNotifications,
-              onChanged: (value) {
-                context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(
-                        settings.copyWith(autoSaveNotifications: value),
-                      ),
-                    );
-              },
-            ),
-            const SizedBox(height: 12),
-            _NotificationToggleItem(
-              title: 'Weekly Summary',
-              subtitle: 'Get a weekly overview of your finances.',
-              value: settings.weeklySummary,
-              onChanged: (value) {
-                context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(
-                        settings.copyWith(weeklySummary: value),
-                      ),
-                    );
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              _NotificationToggleItem(
+                title: 'Weekly Summary',
+                subtitle: 'Receive weekly spending summary',
+                value: settings.weeklySummary,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(weeklySummary: value),
+                        ),
+                      );
+                },
+              ),
+            ],
+          ),
         );
       },
     );
   }
 }
-
-// ── Privacy tab ───────────────────────────────────────────────────────────────
-//
-// Previously used local setState — now reads from and writes to the BLoC
-// so that Save Preferences captures these values correctly.
 
 class _PrivacyTab extends StatelessWidget {
+  const _PrivacyTab();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(
@@ -599,66 +638,44 @@ class _PrivacyTab extends StatelessWidget {
         }
 
         final settings = state.settings;
+        final cs = Theme.of(context).colorScheme;
 
-        return ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const Text(
-              'Privacy Settings',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Data & Privacy',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Control your privacy preferences',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurfaceSecondary,
+              const SizedBox(height: 12),
+              _NotificationToggleItem(
+                title: 'Share Analytics',
+                subtitle: 'Help improve the app by sharing anonymous usage data',
+                value: settings.shareAnalytics,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(shareAnalytics: value),
+                        ),
+                      );
+                },
               ),
-            ),
-            const SizedBox(height: 16),
-
-            _NotificationToggleItem(
-              title: 'Show Balance on Home',
-              subtitle: 'Display your balance on the home screen',
-              value: settings.showBalance,
-              onChanged: (value) {
-                context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(
-                        settings.copyWith(showBalance: value),
-                      ),
-                    );
-              },
-            ),
-            const SizedBox(height: 12),
-            _NotificationToggleItem(
-              title: 'Share Anonymous Analytics',
-              subtitle: 'Help us improve the app with usage data',
-              value: settings.shareAnalytics,
-              onChanged: (value) {
-                context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(
-                        settings.copyWith(shareAnalytics: value),
-                      ),
-                    );
-              },
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
 }
 
-// ── Appearance tab ────────────────────────────────────────────────────────────
-//
-// Previously used local setState — now reads from and writes to the BLoC.
-
 class _AppearanceTab extends StatelessWidget {
+  const _AppearanceTab();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(
@@ -668,65 +685,58 @@ class _AppearanceTab extends StatelessWidget {
         }
 
         final settings = state.settings;
+        final cs = Theme.of(context).colorScheme;
 
-        return ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const Text(
-              'Appearance',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Theme',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Customize how the app looks',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurfaceSecondary,
+              const SizedBox(height: 12),
+              _ThemeOption(
+                title: 'Light',
+                isSelected: settings.theme == 'Light',
+                onTap: () {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(theme: 'Light'),
+                        ),
+                      );
+                },
               ),
-            ),
-            const SizedBox(height: 16),
-
-            _ThemeOption(
-              title: 'Light',
-              isSelected: settings.theme == 'Light',
-              onTap: () {
-                context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(
-                        settings.copyWith(theme: 'Light'),
-                      ),
-                    );
-              },
-            ),
-            const SizedBox(height: 12),
-            _ThemeOption(
-              title: 'Dark',
-              isSelected: settings.theme == 'Dark',
-              onTap: () {
-                context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(
-                        settings.copyWith(theme: 'Dark'),
-                      ),
-                    );
-              },
-            ),
-            const SizedBox(height: 12),
-            _ThemeOption(
-              title: 'System Default',
-              isSelected: settings.theme == 'System Default',
-              onTap: () {
-                context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(
-                        settings.copyWith(theme: 'System Default'),
-                      ),
-                    );
-              },
-            ),
-          ],
+              const SizedBox(height: 12),
+              _ThemeOption(
+                title: 'Dark',
+                isSelected: settings.theme == 'Dark',
+                onTap: () {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(theme: 'Dark'),
+                        ),
+                      );
+                },
+              ),
+              const SizedBox(height: 12),
+              _ThemeOption(
+                title: 'System Default',
+                isSelected: settings.theme == 'System Default',
+                onTap: () {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(theme: 'System Default'),
+                        ),
+                      );
+                },
+              ),
+            ],
+          ),
         );
       },
     );
@@ -754,11 +764,13 @@ class _ThemeOption extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
-              : AppColors.surface,
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.12)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.transparent,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.transparent,
             width: 2,
           ),
         ),
@@ -771,13 +783,17 @@ class _ThemeOption extends StatelessWidget {
                   fontSize: 16,
                   fontWeight:
                       isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color:
-                      isSelected ? AppColors.primary : AppColors.onSurface,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle, color: AppColors.primary),
+              Icon(
+                Icons.check_circle,
+                color: Theme.of(context).colorScheme.primary,
+              ),
           ],
         ),
       ),
@@ -800,6 +816,7 @@ class _NotificationToggleItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Expanded(
@@ -808,19 +825,19 @@ class _NotificationToggleItem extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.normal,
-                  color: AppColors.onSurface,
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,
-                  color: AppColors.onSurfaceSecondary,
+                  color: cs.onSurface.withValues(alpha: 0.65),
                 ),
               ),
             ],
@@ -830,10 +847,6 @@ class _NotificationToggleItem extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppColors.onPrimary,
-          activeTrackColor: AppColors.primary,
-          inactiveThumbColor: AppColors.disabled,
-          inactiveTrackColor: AppColors.surface,
         ),
       ],
     );
@@ -853,13 +866,14 @@ class _SettingsNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
-        leading: Icon(icon, color: AppColors.primary),
+        leading: Icon(icon, color: cs.primary),
         title: Text(title),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
@@ -876,13 +890,14 @@ class _AccountButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       child: Container(
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -892,10 +907,10 @@ class _AccountButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: onPressed,
           style: OutlinedButton.styleFrom(
-            backgroundColor: AppColors.onPrimary,
-            foregroundColor: AppColors.onSurface,
+            backgroundColor: cs.surface,
+            foregroundColor: cs.onSurface,
             padding: const EdgeInsets.symmetric(vertical: 16),
-            side: const BorderSide(color: AppColors.onSurface, width: 2),
+            side: BorderSide(color: cs.onSurface.withValues(alpha: 0.35), width: 2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -932,30 +947,6 @@ class TipsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Tips')),
       body: const Center(child: Text('Placeholder Tips Page')),
-    );
-  }
-}
-
-class SignInPage extends StatelessWidget {
-  const SignInPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: const Center(child: Text('Placeholder Sign In Page')),
-    );
-  }
-}
-
-class SignUpPage extends StatelessWidget {
-  const SignUpPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
-      body: const Center(child: Text('Placeholder Sign Up Page')),
     );
   }
 }
