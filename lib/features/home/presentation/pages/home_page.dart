@@ -4,8 +4,15 @@ import 'package:pocket_plan/features/budget/presentation/bloc/expense_bloc.dart'
 import 'package:pocket_plan/features/income/presentation/bloc/income_bloc.dart';
 import 'package:intl/intl.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  double _savingPercentage = 20.0; // Default 20%
 
   @override
   Widget build(BuildContext context) {
@@ -25,19 +32,24 @@ class HomePage extends StatelessWidget {
                   0, (sum, item) => sum + item.amount);
             }
 
-            double currentBalance = totalIncome - totalExpense;
+            double rawBalance = totalIncome - totalExpense;
+
+            // Calculations based on slider
+            double savedAmount = rawBalance > 0 ? rawBalance * (_savingPercentage / 100) : 0;
+            double safeToSpend = rawBalance > 0 ? rawBalance - savedAmount : 0;
+            double baseEmergencySaving = 400000;
+            double totalEmergencySaving = baseEmergencySaving + savedAmount;
 
             final now = DateTime.now();
             final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
             final daysLeft = lastDayOfMonth.day - now.day + 1;
-            
-            // Assume 20% of income should be saved, or safe to spend is 80% of current balance
-            double safeToSpend = currentBalance > 0 ? (currentBalance * 0.8) : 0;
 
-            // Lean period logic: if average daily budget left is less than 3000 RWF
-            double dailyBudget = daysLeft > 0 ? currentBalance / daysLeft : 0;
+            // Lean period logic based on Safe To Spend instead of raw balance
+            double dailyBudget = daysLeft > 0 ? safeToSpend / daysLeft : 0;
             bool isLeanPeriod = dailyBudget > 0 && dailyBudget < 3000;
-            if (currentBalance <= 0) {
+            if (safeToSpend <= 0 && rawBalance > 0) {
+              isLeanPeriod = true;
+            } else if (rawBalance <= 0) {
               isLeanPeriod = true;
             }
 
@@ -53,7 +65,7 @@ class HomePage extends StatelessWidget {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          _buildBalanceCard(currentBalance),
+                          _buildSavingsUI(),
                           const SizedBox(height: 12),
                           _buildSafeToSpendCard(safeToSpend, currentMonth),
                           const SizedBox(height: 12),
@@ -61,7 +73,7 @@ class HomePage extends StatelessWidget {
                             _buildWarningBanner(daysLeft),
                             const SizedBox(height: 12),
                           ],
-                          _buildEmergencySavingCard(),
+                          _buildEmergencySavingCard(totalEmergencySaving),
                           const SizedBox(height: 20),
                         ],
                       ),
@@ -125,8 +137,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceCard(double balance) {
-    final currencyFormatter = NumberFormat.currency(symbol: 'RWF ', decimalDigits: 0);
+  Widget _buildSavingsUI() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -137,33 +148,54 @@ class HomePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Current Balance',
-            style: TextStyle(
-              color: Color(0xFFB2DFDB),
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            currencyFormatter.format(balance),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          GestureDetector(
-            onTap: () {},
-            child: const Text(
-              'See Details',
-              style: TextStyle(
-                color: Color(0xFF4CAF50),
-                fontSize: 13,
-                decoration: TextDecoration.underline,
-                decorationColor: Color(0xFF4CAF50),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Savings Allocation',
+                style: TextStyle(
+                  color: Color(0xFFB2DFDB),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
+              Text(
+                '${_savingPercentage.toInt()}%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: const Color(0xFF4CAF50),
+              inactiveTrackColor: Colors.white24,
+              thumbColor: Colors.white,
+              overlayColor: const Color(0xFF4CAF50).withAlpha(50), // Replaced withAlpha for compatibility
+              trackHeight: 6.0,
+            ),
+            child: Slider(
+              value: _savingPercentage,
+              min: 0,
+              max: 100,
+              divisions: 20,
+              onChanged: (value) {
+                setState(() {
+                  _savingPercentage = value;
+                });
+              },
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Adjust how much of your balance goes to Emergency Savings.',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
             ),
           ),
         ],
@@ -263,8 +295,9 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildEmergencySavingCard() {
-    const double savedPercent = 0.80;
+  Widget _buildEmergencySavingCard(double totalEmergencySaving) {
+    double target = 500000;
+    double savedPercent = (totalEmergencySaving / target).clamp(0.0, 1.0);
     final currencyFormatter = NumberFormat.currency(symbol: 'RWF ', decimalDigits: 0);
 
     return Container(
@@ -288,7 +321,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               Text(
-                currencyFormatter.format(400000), // Adjusted relative to 500k target
+                currencyFormatter.format(totalEmergencySaving),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -309,11 +342,11 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: const LinearProgressIndicator(
+            child: LinearProgressIndicator(
               value: savedPercent,
               minHeight: 10,
-              backgroundColor: Color(0xFFE0E0E0),
-              valueColor: AlwaysStoppedAnimation<Color>(
+              backgroundColor: const Color(0xFFE0E0E0),
+              valueColor: const AlwaysStoppedAnimation<Color>(
                 Color(0xFF4CAF50),
               ),
             ),
@@ -322,12 +355,12 @@ class HomePage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Saved: 80%',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+              Text(
+                'Saved: ${(savedPercent * 100).toStringAsFixed(0)}%',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
               Text(
-                'Target: ${currencyFormatter.format(500000)}',
+                'Target: ${currencyFormatter.format(target)}',
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
