@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/theme/colors.dart';
+import 'package:pocket_plan/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:pocket_plan/features/auth/presentation/bloc/auth_event.dart';
+import 'package:pocket_plan/features/education/presentation/pages/tips_screen.dart';
+import 'package:pocket_plan/features/help_support/presentation/pages/help_support_screen.dart';
 import '../presentation/bloc/settings_bloc.dart';
 import '../presentation/bloc/settings_event.dart';
 import '../presentation/bloc/settings_state.dart';
@@ -29,8 +33,7 @@ class SettingsPage extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Account deleted successfully')),
             );
-            // Navigate to login screen
-            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            context.read<AuthBloc>().add(CheckAuthStatusEvent());
           }
           if (state is DataDownloaded) {
             _handleDataDownload(context, state.data);
@@ -228,7 +231,7 @@ class SettingsPage extends StatelessWidget {
                 icon: Icons.help_outline,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                  MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
                 ),
               ),
               const SizedBox(height: 12),
@@ -237,7 +240,7 @@ class SettingsPage extends StatelessWidget {
                 icon: Icons.lightbulb_outline,
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const TipsPage()),
+                  MaterialPageRoute(builder: (_) => const TipsScreen()),
                 ),
               ),
               const SizedBox(height: 24),
@@ -921,32 +924,6 @@ class _AccountButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-// ── Placeholder pages ─────────────────────────────────────────────────────────
-
-class HelpSupportPage extends StatelessWidget {
-  const HelpSupportPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Help & Support')),
-      body: const Center(child: Text('Placeholder Help & Support Page')),
-    );
-  }
-}
-
-class TipsPage extends StatelessWidget {
-  const TipsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tips')),
-      body: const Center(child: Text('Placeholder Tips Page')),
     );
   }
 }

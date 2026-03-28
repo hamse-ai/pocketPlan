@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pocket_plan/core/presentation/auth_wrapper.dart';
-import 'package:pocket_plan/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:pocket_plan/features/profile/presentation/bloc/profile_event.dart';
-import 'package:pocket_plan/features/settings/presentation/bloc/settings_bloc.dart';
-import 'package:pocket_plan/features/settings/presentation/bloc/settings_event.dart';
-import 'package:pocket_plan/features/settings/presentation/bloc/settings_state.dart';
-import 'injection_container.dart' as di;
+
+import 'core/presentation/main_navigation.dart';
 import 'core/theme/appTheme.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/auth/presentation/bloc/auth_event.dart';
+import 'features/auth/presentation/bloc/auth_state.dart';
+import 'features/auth/presentation/pages/login_page.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
+import 'features/profile/presentation/bloc/profile_event.dart';
+import 'features/settings/presentation/bloc/settings_bloc.dart';
+import 'features/settings/presentation/bloc/settings_event.dart';
+import 'features/settings/presentation/bloc/settings_state.dart';
+import 'injection_container.dart' as di;
 
 void main() async {
-  // Ensure Flutter bindings are initialized before calling Firebase or GetIt
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize dependency injection (includes Firebase initialization)
   await di.init();
-
   runApp(const PocketPlanApp());
 }
 
@@ -27,6 +28,9 @@ class PocketPlanApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
+          create: (_) => di.sl<AuthBloc>()..add(CheckAuthStatusEvent()),
+        ),
+        BlocProvider(
           create: (_) => di.sl<SettingsBloc>()..add(LoadSettingsEvent()),
         ),
         BlocProvider(
@@ -34,25 +38,38 @@ class PocketPlanApp extends StatelessWidget {
         ),
       ],
       child: BlocBuilder<SettingsBloc, SettingsState>(
-        builder: (context, state) {
-          // Determine theme mode based on settings
+        builder: (context, settingsState) {
           ThemeMode themeMode = ThemeMode.light;
-          
-          if (state is SettingsLoaded) {
-            themeMode = AppTheme.getThemeMode(state.settings.theme);
+          if (settingsState is SettingsLoaded) {
+            themeMode = AppTheme.getThemeMode(settingsState.settings.theme);
           }
 
           return MaterialApp(
             title: 'Pocket Plan',
             debugShowCheckedModeBanner: false,
-            
-            // Apply both light and dark themes
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
-            
-            // AuthWrapper handles routing between SignIn and MainNavigation
-            home: const AuthWrapper(),
+            home: BlocListener<AuthBloc, AuthState>(
+              listenWhen: (prev, curr) => curr is Authenticated,
+              listener: (context, state) {
+                context.read<SettingsBloc>().add(LoadSettingsEvent());
+                context.read<ProfileBloc>().add(LoadProfile());
+              },
+              child: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  if (authState is AuthLoading) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (authState is Authenticated) {
+                    return const MainNavigation();
+                  }
+                  return const LoginPage();
+                },
+              ),
+            ),
           );
         },
       ),

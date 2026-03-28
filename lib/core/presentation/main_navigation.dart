@@ -1,3 +1,4 @@
+import 'package:pocket_plan/features/home/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_plan/features/budget/presentation/bloc/expense_bloc.dart';
@@ -19,7 +20,7 @@ class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-  const PlaceholderScreen(screenName: 'Home'),
+  const HomePage(),
   const IncomeScreen(),
   const ExpenseScreen(),
   const ProfilePage(),
