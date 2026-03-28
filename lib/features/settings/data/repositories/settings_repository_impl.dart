@@ -23,17 +23,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<Either<Failure, void>> saveSettings(Settings settings) async {
     try {
-      final model = SettingsModel(
-        autoSaveNotifications: settings.autoSaveNotifications,
-        weeklySummary: settings.weeklySummary,
-        showBalance: settings.showBalance,
-        shareAnalytics: settings.shareAnalytics,
-        theme: settings.theme,
-        notificationsEnabled: settings.notificationsEnabled, // NEW FIELD
-      );
-
-      await localDataSource.saveSettings(model);
-
+      await localDataSource.saveSettings(SettingsModel.fromEntity(settings));
       return const Right(null);
     } catch (e) {
       return const Left(CacheFailure());

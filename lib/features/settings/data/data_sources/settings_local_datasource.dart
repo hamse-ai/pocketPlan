@@ -1,35 +1,47 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/settings_model.dart';
 
 abstract class SettingsLocalDataSource {
   Future<SettingsModel> getSettings();
-
   Future<void> saveSettings(SettingsModel settings);
 }
 
 class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
-  SettingsModel? _cachedSettings;
+  static const _kSettingsKey = 'pocket_plan_settings';
+
+  final SharedPreferences sharedPreferences;
+
+  SettingsLocalDataSourceImpl({required this.sharedPreferences});
 
   @override
   Future<SettingsModel> getSettings() async {
-    if (_cachedSettings != null) {
-      return _cachedSettings!;
+    final jsonString = sharedPreferences.getString(_kSettingsKey);
+
+    if (jsonString != null) {
+      return SettingsModel.fromJson(
+        json.decode(jsonString) as Map<String, dynamic>,
+      );
     }
 
-    // default values
-    _cachedSettings = const SettingsModel(
+    // No stored settings yet — return sensible defaults.
+    return const SettingsModel(
       autoSaveNotifications: true,
       weeklySummary: true,
       showBalance: true,
       shareAnalytics: false,
-      theme: "Light",
-      notificationsEnabled: true, // NEW FIELD - default to true
+      theme: 'Light',
+      notificationsEnabled: true,
+      userName: '',
+      email: '',
     );
-
-    return _cachedSettings!;
   }
 
   @override
   Future<void> saveSettings(SettingsModel settings) async {
-    _cachedSettings = settings;
+    await sharedPreferences.setString(
+      _kSettingsKey,
+      json.encode(settings.toJson()),
+    );
   }
 }

@@ -8,13 +8,20 @@ class Settings extends Equatable {
   final String theme;
   final bool notificationsEnabled;
 
+  // Profile fields — populated from Firebase once auth is wired up.
+  // Until then they hold empty strings (safe defaults).
+  final String userName;
+  final String email;
+
   const Settings({
     required this.autoSaveNotifications,
     required this.weeklySummary,
     required this.showBalance,
     required this.shareAnalytics,
     required this.theme,
-    required this.notificationsEnabled, 
+    required this.notificationsEnabled,
+    this.userName = '',
+    this.email = '',
   });
 
   Settings copyWith({
@@ -24,14 +31,19 @@ class Settings extends Equatable {
     bool? shareAnalytics,
     String? theme,
     bool? notificationsEnabled,
+    String? userName,
+    String? email,
   }) {
     return Settings(
-      autoSaveNotifications: autoSaveNotifications ?? this.autoSaveNotifications,
+      autoSaveNotifications:
+          autoSaveNotifications ?? this.autoSaveNotifications,
       weeklySummary: weeklySummary ?? this.weeklySummary,
       showBalance: showBalance ?? this.showBalance,
       shareAnalytics: shareAnalytics ?? this.shareAnalytics,
       theme: theme ?? this.theme,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      userName: userName ?? this.userName,
+      email: email ?? this.email,
     );
   }
 
@@ -42,6 +54,8 @@ class Settings extends Equatable {
         showBalance,
         shareAnalytics,
         theme,
-        notificationsEnabled, // NEW FIELD
+        notificationsEnabled,
+        userName,
+        email,
       ];
 }

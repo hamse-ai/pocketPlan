@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../features/settings/presentation/bloc/settings_bloc.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../injection_container.dart';
 import '../domain/entities/settings.dart';
+import '../presentation/bloc/settings_bloc.dart';
 import '../presentation/bloc/settings_event.dart';
 import '../presentation/bloc/settings_state.dart';
 
@@ -12,22 +12,19 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Show result using BlocListener
-    // Change BlocProvider → BlocProvider + BlocListener
     return BlocProvider(
       create: (_) => sl<SettingsBloc>()..add(LoadSettingsEvent()),
       child: BlocListener<SettingsBloc, SettingsState>(
         listener: (context, state) {
           if (state is SettingsSaved) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text("Settings saved")));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Settings saved')),
+            );
           }
-
           if (state is SettingsError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
           }
         },
         child: SingleChildScrollView(
@@ -35,7 +32,7 @@ class SettingsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Settings Header Card
+              // ── Header card ──────────────────────────────────────────────
               SizedBox(
                 width: double.infinity,
                 child: Card(
@@ -49,7 +46,7 @@ class SettingsPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Settings',
                           style: TextStyle(
                             fontSize: 24,
@@ -60,7 +57,7 @@ class SettingsPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         SizedBox(
                           width: 200,
-                          child: Text(
+                          child: const Text(
                             'Manage your account and preference',
                             style: TextStyle(
                               fontSize: 16,
@@ -75,39 +72,56 @@ class SettingsPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Tab Bar with rounded ends
-              _SettingsTabView(),
+              // ── Tabbed settings ──────────────────────────────────────────
+              const _SettingsTabView(),
 
               const SizedBox(height: 24),
 
-              // Save Preferences Button (only takes needed width)
-              ElevatedButton(
-                onPressed: () {
-                  final bloc = context.read<SettingsBloc>();
-                  final state = bloc.state;
-
-                  if (state is SettingsLoaded) {
-                    bloc.add(SaveSettingsEvent(state.settings));
-                  }
+              // ── Save button ──────────────────────────────────────────────
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  final isLoading = state is SettingsLoading;
+                  return ElevatedButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            final bloc = context.read<SettingsBloc>();
+                            final current = bloc.state;
+                            if (current is SettingsLoaded) {
+                              bloc.add(SaveSettingsEvent(current.settings));
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.onPrimary,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.onPrimary,
+                            ),
+                          )
+                        : const Text(
+                            'Save Preferences',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                  );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.onPrimary,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'Save Preferences',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
               ),
 
               const SizedBox(height: 32),
 
-              // Account Management Section (below tabs)
-              Text(
+              // ── Account management ───────────────────────────────────────
+              const Text(
                 'Account Management',
                 style: TextStyle(
                   fontSize: 16,
@@ -115,8 +129,8 @@ class SettingsPage extends StatelessWidget {
                   color: AppColors.onSurface,
                 ),
               ),
-              SizedBox(height: 4),
-              Text(
+              const SizedBox(height: 4),
+              const Text(
                 'Manage your account and security',
                 style: TextStyle(
                   fontSize: 16,
@@ -124,83 +138,27 @@ class SettingsPage extends StatelessWidget {
                   color: AppColors.onSurfaceSecondary,
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // Download My Data Button
-              SizedBox(
-                width: double.infinity,
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: AppColors.onPrimary,
-                      foregroundColor: AppColors.onSurface,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      side: BorderSide(color: AppColors.onSurface, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Download My Data',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
+              // Download My Data
+              _AccountButton(
+                label: 'Download My Data',
+                onPressed: () {
+                  // TODO: implement data export
+                },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // Change Password Button
-              SizedBox(
-                width: double.infinity,
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: AppColors.onPrimary,
-                      foregroundColor: AppColors.onSurface,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      side: BorderSide(color: AppColors.onSurface, width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Change Password',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
+              // Change Password
+              _AccountButton(
+                label: 'Change Password',
+                onPressed: () {
+                  // TODO: wire up Firebase password change
+                },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // Delete Account Button
+              // Delete Account
               SizedBox(
                 width: double.infinity,
                 child: Container(
@@ -209,35 +167,36 @@ class SettingsPage extends StatelessWidget {
                       BoxShadow(
                         color: Colors.black.withOpacity(0.15),
                         blurRadius: 8,
-                        offset: Offset(0, 4),
+                        offset: const Offset(0, 4),
                       ),
                     ],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // TODO: wire up Firebase account deletion
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.delete,
                       foregroundColor: AppColors.onDelete,
-                      padding: EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
+                    child: const Text(
                       'Delete Account',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                          fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-              Text(
+              // ── More ─────────────────────────────────────────────────────
+              const Text(
                 'More',
                 style: TextStyle(
                   fontSize: 16,
@@ -245,36 +204,26 @@ class SettingsPage extends StatelessWidget {
                   color: AppColors.onSurface,
                 ),
               ),
-
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               _SettingsNavButton(
                 title: 'Help & Support',
                 icon: Icons.help_outline,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => HelpSupportPage()),
-                  );
-                },
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                ),
               ),
-
-              SizedBox(height: 12),
-
+              const SizedBox(height: 12),
               _SettingsNavButton(
                 title: 'Tips',
                 icon: Icons.lightbulb_outline,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => TipsPage()),
-                  );
-                },
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TipsPage()),
+                ),
               ),
-
-              SizedBox(height: 12),
-
-              
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -283,17 +232,20 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
+// ── Tab view ───────────────────────────────────────────────────────────────────
+
 class _SettingsTabView extends StatelessWidget {
+  const _SettingsTabView();
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 4,
       child: Column(
         children: [
-          // Custom TabBar with rounded container
           Container(
             height: 48,
-            padding: EdgeInsets.all(4),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(25),
@@ -305,8 +257,9 @@ class _SettingsTabView extends StatelessWidget {
               ),
               labelColor: AppColors.onSurface,
               unselectedLabelColor: AppColors.onSurfaceSecondary,
-              labelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: TextStyle(
+              labelStyle:
+                  const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+              unselectedLabelStyle: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.normal,
               ),
@@ -314,7 +267,7 @@ class _SettingsTabView extends StatelessWidget {
               indicatorSize: TabBarIndicatorSize.tab,
               splashFactory: NoSplash.splashFactory,
               overlayColor: WidgetStateProperty.all(Colors.transparent),
-              tabs: [
+              tabs: const [
                 Tab(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
@@ -370,10 +323,7 @@ class _SettingsTabView extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: 16),
-
-          // TabBarView content
           SizedBox(
             height: 300,
             child: TabBarView(
@@ -391,111 +341,178 @@ class _SettingsTabView extends StatelessWidget {
   }
 }
 
-// Profile Tab - Shorter content
+// ── Profile tab ───────────────────────────────────────────────────────────────
+//
+// The text controllers are seeded from BLoC state (settings.userName /
+// settings.email).  Right now those will be empty strings because Firebase
+// isn't wired yet.  Once the auth teammate exposes user data, just populate
+// those two fields on the Settings entity and this tab will display them
+// automatically with zero changes here.
+
 class _ProfileTab extends StatefulWidget {
   @override
   State<_ProfileTab> createState() => _ProfileTabState();
 }
 
 class _ProfileTabState extends State<_ProfileTab> {
-  final TextEditingController fullNameController = TextEditingController(
-    text: 'John Doe',
-  );
-  final TextEditingController emailController = TextEditingController(
-    text: 'john@example.com',
-  );
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
 
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        // Profile Header
-        Text(
-          'Profile',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Update your personal information',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceSecondary,
-          ),
-        ),
-        SizedBox(height: 24),
-
-        // Full Name
-        Text(
-          'Full Name',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 8),
-        TextField(
-          controller: fullNameController,
-          decoration: InputDecoration(
-            hintText: 'Enter your full name',
-            filled: true,
-            fillColor: AppColors.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        SizedBox(height: 16),
-
-        // Email
-        Text(
-          'Email',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 8),
-        TextField(
-          controller: emailController,
-          decoration: InputDecoration(
-            hintText: 'user@example.com',
-            filled: true,
-            fillColor: AppColors.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  bool _initialised = false;
 
   @override
   void dispose() {
-    fullNameController.dispose();
-    emailController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
     super.dispose();
+  }
+
+  void _initControllers(Settings settings) {
+    if (_initialised) return;
+    _nameController = TextEditingController(text: settings.userName);
+    _emailController = TextEditingController(text: settings.email);
+    _initialised = true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<SettingsBloc, SettingsState>(
+      // Only rebuild when the profile fields actually change, not on every
+      // toggle update in another tab.
+      buildWhen: (prev, curr) {
+        if (curr is! SettingsLoaded) return true;
+        if (prev is! SettingsLoaded) return true;
+        return prev.settings.userName != curr.settings.userName ||
+            prev.settings.email != curr.settings.email;
+      },
+      listenWhen: (_, curr) => curr is SettingsLoaded,
+      listener: (context, state) {
+        if (state is SettingsLoaded) {
+          // Sync controllers whenever the BLoC pushes fresh data (e.g. after
+          // Firebase loads the real profile).
+          if (_initialised) {
+            _nameController.text = state.settings.userName;
+            _emailController.text = state.settings.email;
+          }
+        }
+      },
+      builder: (context, state) {
+        if (state is SettingsLoading || state is SettingsInitial) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is SettingsLoaded) {
+          _initControllers(state.settings);
+        }
+
+        if (state is SettingsError) {
+          return Center(child: Text(state.message));
+        }
+
+        return ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const Text(
+              'Profile',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurface,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Update your personal information',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurfaceSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Full Name
+            const Text(
+              'Full Name',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                hintText: 'Enter your full name',
+                filled: true,
+                fillColor: AppColors.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (value) {
+                // Keep BLoC in sync as the user types so Save picks it up.
+                final bloc = context.read<SettingsBloc>();
+                final current = bloc.state;
+                if (current is SettingsLoaded) {
+                  bloc.add(UpdateSettingsEvent(
+                    current.settings.copyWith(userName: value),
+                  ));
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Email
+            const Text(
+              'Email',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                hintText: 'user@example.com',
+                filled: true,
+                fillColor: AppColors.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (value) {
+                final bloc = context.read<SettingsBloc>();
+                final current = bloc.state;
+                if (current is SettingsLoaded) {
+                  bloc.add(UpdateSettingsEvent(
+                    current.settings.copyWith(email: value),
+                  ));
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
-// Notifications Tab
+// ── Notifications tab ─────────────────────────────────────────────────────────
+
 class _NotificationsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(
       builder: (context, state) {
         if (state is! SettingsLoaded) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         final settings = state.settings;
@@ -503,7 +520,7 @@ class _NotificationsTab extends StatelessWidget {
         return ListView(
           padding: EdgeInsets.zero,
           children: [
-            Text(
+            const Text(
               'Email Notifications',
               style: TextStyle(
                 fontSize: 16,
@@ -511,8 +528,8 @@ class _NotificationsTab extends StatelessWidget {
                 color: AppColors.onSurface,
               ),
             ),
-            SizedBox(height: 4),
-            Text(
+            const SizedBox(height: 4),
+            const Text(
               'Choose what updates you want to receive',
               style: TextStyle(
                 fontSize: 16,
@@ -520,25 +537,250 @@ class _NotificationsTab extends StatelessWidget {
                 color: AppColors.onSurfaceSecondary,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             _NotificationToggleItem(
               title: 'Lean Period Warning',
               subtitle: 'Get notified when balance may run low soon.',
               value: settings.notificationsEnabled,
               onChanged: (value) {
-                final newSettings = settings.copyWith(
-                  notificationsEnabled: value,
-                );
-
                 context.read<SettingsBloc>().add(
-                      UpdateSettingsEvent(newSettings),
+                      UpdateSettingsEvent(
+                        settings.copyWith(notificationsEnabled: value),
+                      ),
+                    );
+              },
+            ),
+            const SizedBox(height: 12),
+            _NotificationToggleItem(
+              title: 'Auto-save Notifications',
+              subtitle: 'Receive alerts for automatic savings actions.',
+              value: settings.autoSaveNotifications,
+              onChanged: (value) {
+                context.read<SettingsBloc>().add(
+                      UpdateSettingsEvent(
+                        settings.copyWith(autoSaveNotifications: value),
+                      ),
+                    );
+              },
+            ),
+            const SizedBox(height: 12),
+            _NotificationToggleItem(
+              title: 'Weekly Summary',
+              subtitle: 'Get a weekly overview of your finances.',
+              value: settings.weeklySummary,
+              onChanged: (value) {
+                context.read<SettingsBloc>().add(
+                      UpdateSettingsEvent(
+                        settings.copyWith(weeklySummary: value),
+                      ),
                     );
               },
             ),
           ],
         );
       },
+    );
+  }
+}
+
+// ── Privacy tab ───────────────────────────────────────────────────────────────
+//
+// Previously used local setState — now reads from and writes to the BLoC
+// so that Save Preferences captures these values correctly.
+
+class _PrivacyTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        if (state is! SettingsLoaded) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final settings = state.settings;
+
+        return ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const Text(
+              'Privacy Settings',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurface,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Control your privacy preferences',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurfaceSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            _NotificationToggleItem(
+              title: 'Show Balance on Home',
+              subtitle: 'Display your balance on the home screen',
+              value: settings.showBalance,
+              onChanged: (value) {
+                context.read<SettingsBloc>().add(
+                      UpdateSettingsEvent(
+                        settings.copyWith(showBalance: value),
+                      ),
+                    );
+              },
+            ),
+            const SizedBox(height: 12),
+            _NotificationToggleItem(
+              title: 'Share Anonymous Analytics',
+              subtitle: 'Help us improve the app with usage data',
+              value: settings.shareAnalytics,
+              onChanged: (value) {
+                context.read<SettingsBloc>().add(
+                      UpdateSettingsEvent(
+                        settings.copyWith(shareAnalytics: value),
+                      ),
+                    );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ── Appearance tab ────────────────────────────────────────────────────────────
+//
+// Previously used local setState — now reads from and writes to the BLoC.
+
+class _AppearanceTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        if (state is! SettingsLoaded) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final settings = state.settings;
+
+        return ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const Text(
+              'Appearance',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurface,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Customize how the app looks',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurfaceSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            _ThemeOption(
+              title: 'Light',
+              isSelected: settings.theme == 'Light',
+              onTap: () {
+                context.read<SettingsBloc>().add(
+                      UpdateSettingsEvent(
+                        settings.copyWith(theme: 'Light'),
+                      ),
+                    );
+              },
+            ),
+            const SizedBox(height: 12),
+            _ThemeOption(
+              title: 'Dark',
+              isSelected: settings.theme == 'Dark',
+              onTap: () {
+                context.read<SettingsBloc>().add(
+                      UpdateSettingsEvent(
+                        settings.copyWith(theme: 'Dark'),
+                      ),
+                    );
+              },
+            ),
+            const SizedBox(height: 12),
+            _ThemeOption(
+              title: 'System Default',
+              isSelected: settings.theme == 'System Default',
+              onTap: () {
+                context.read<SettingsBloc>().add(
+                      UpdateSettingsEvent(
+                        settings.copyWith(theme: 'System Default'),
+                      ),
+                    );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ── Shared small widgets ──────────────────────────────────────────────────────
+
+class _ThemeOption extends StatelessWidget {
+  final String title;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ThemeOption({
+    required this.title,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight:
+                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color:
+                      isSelected ? AppColors.primary : AppColors.onSurface,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: AppColors.primary),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -566,16 +808,16 @@ class _NotificationToggleItem extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.normal,
                   color: AppColors.onSurface,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,
                   color: AppColors.onSurfaceSecondary,
@@ -584,7 +826,7 @@ class _NotificationToggleItem extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(width: 12),
+        const SizedBox(width: 12),
         Switch(
           value: value,
           onChanged: onChanged,
@@ -594,183 +836,6 @@ class _NotificationToggleItem extends StatelessWidget {
           inactiveTrackColor: AppColors.surface,
         ),
       ],
-    );
-  }
-}
-
-// Privacy Tab - Simpler content
-class _PrivacyTab extends StatefulWidget {
-  @override
-  State<_PrivacyTab> createState() => _PrivacyTabState();
-}
-
-class _PrivacyTabState extends State<_PrivacyTab> {
-  bool showBalance = true;
-  bool shareAnalytics = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        // Privacy Header
-        Text(
-          'Privacy Settings',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Control your privacy preferences',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceSecondary,
-          ),
-        ),
-        SizedBox(height: 16),
-
-        _NotificationToggleItem(
-          title: 'Show Balance on Home',
-          subtitle: 'Display your balance on the home screen',
-          value: showBalance,
-          onChanged: (value) {
-            setState(() {
-              showBalance = value;
-            });
-          },
-        ),
-        SizedBox(height: 12),
-        _NotificationToggleItem(
-          title: 'Share Anonymous Analytics',
-          subtitle: 'Help us improve the app with usage data',
-          value: shareAnalytics,
-          onChanged: (value) {
-            setState(() {
-              shareAnalytics = value;
-            });
-          },
-        ),
-      ],
-    );
-  }
-}
-
-// Appearance Tab
-class _AppearanceTab extends StatefulWidget {
-  @override
-  State<_AppearanceTab> createState() => _AppearanceTabState();
-}
-
-class _AppearanceTabState extends State<_AppearanceTab> {
-  String selectedTheme = 'Light';
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        // Appearance Header
-        Text(
-          'Appearance',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Customize how the app looks',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceSecondary,
-          ),
-        ),
-        SizedBox(height: 16),
-
-        // Theme Options
-        _ThemeOption(
-          title: 'Light',
-          isSelected: selectedTheme == 'Light',
-          onTap: () {
-            setState(() {
-              selectedTheme = 'Light';
-            });
-          },
-        ),
-        SizedBox(height: 12),
-        _ThemeOption(
-          title: 'Dark',
-          isSelected: selectedTheme == 'Dark',
-          onTap: () {
-            setState(() {
-              selectedTheme = 'Dark';
-            });
-          },
-        ),
-        SizedBox(height: 12),
-        _ThemeOption(
-          title: 'System Default',
-          isSelected: selectedTheme == 'System Default',
-          onTap: () {
-            setState(() {
-              selectedTheme = 'System Default';
-            });
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _ThemeOption extends StatelessWidget {
-  final String title;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ThemeOption({
-    required this.title,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected ? AppColors.primary : AppColors.onSurface,
-                ),
-              ),
-            ),
-            if (isSelected) Icon(Icons.check_circle, color: AppColors.primary),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -796,14 +861,56 @@ class _SettingsNavButton extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon, color: AppColors.primary),
         title: Text(title),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
       ),
     );
   }
 }
 
-// ---------------- PLACEHOLDER PAGES ----------------
+class _AccountButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+
+  const _AccountButton({required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: OutlinedButton(
+          onPressed: onPressed,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: AppColors.onPrimary,
+            foregroundColor: AppColors.onSurface,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            side: const BorderSide(color: AppColors.onSurface, width: 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Placeholder pages ─────────────────────────────────────────────────────────
 
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({super.key});

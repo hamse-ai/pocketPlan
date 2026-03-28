@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../../domain/entities/settings.dart';
 import '../../domain/usecases/get_settings.dart';
 import '../../domain/usecases/save_settings.dart';
 
@@ -38,20 +37,36 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     SaveSettingsEvent event,
     Emitter<SettingsState> emit,
   ) async {
+    // Keep a reference to the current settings so we can restore
+    // SettingsLoaded after the save — otherwise the UI loses its state.
+    final currentSettings = event.settings;
+
     emit(SettingsLoading());
 
-    final result = await saveSettings(event.settings);
+    final result = await saveSettings(currentSettings);
 
     result.fold(
-      (failure) => emit(SettingsError(failure.message)),
-      (_) => emit(SettingsSaved()),
+      (failure) {
+        // On failure, restore the loaded state so the user's changes aren't
+        // wiped from the screen.
+        emit(SettingsLoaded(currentSettings));
+        emit(SettingsError(failure.message));
+      },
+      (_) {
+        // Signal success briefly, then immediately restore SettingsLoaded
+        // so tabs that depend on SettingsLoaded keep rendering correctly.
+        emit(SettingsSaved());
+        emit(SettingsLoaded(currentSettings));
+      },
     );
   }
 
   Future<void> _onUpdateSettings(
-  UpdateSettingsEvent event,
-  Emitter<SettingsState> emit,
+    UpdateSettingsEvent event,
+    Emitter<SettingsState> emit,
   ) async {
+    // Instantly reflect toggle/selection changes in the UI without
+    // touching the data layer.
     emit(SettingsLoaded(event.settings));
   }
 }
