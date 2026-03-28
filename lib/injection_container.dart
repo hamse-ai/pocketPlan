@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:pocket_plan/firebase_options.dart';
 
 // Settings feature
@@ -14,6 +15,15 @@ import 'package:pocket_plan/features/settings/domain/usecases/get_settings.dart'
 import 'package:pocket_plan/features/settings/domain/usecases/save_settings.dart';
 import 'package:pocket_plan/features/settings/domain/usecases/account_management_usecases.dart';
 import 'package:pocket_plan/features/settings/presentation/bloc/settings_bloc.dart';
+
+// Profile feature
+import 'package:pocket_plan/features/profile/data/data_sources/profile_firebase_datasource.dart';
+import 'package:pocket_plan/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:pocket_plan/features/profile/domain/repositories/profile_repository.dart';
+import 'package:pocket_plan/features/profile/domain/usecases/get_profile.dart';
+import 'package:pocket_plan/features/profile/domain/usecases/update_profile.dart';
+import 'package:pocket_plan/features/profile/domain/usecases/upload_profile_photo.dart';
+import 'package:pocket_plan/features/profile/presentation/bloc/profile_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -32,6 +42,33 @@ Future<void> init() async {
   // Firebase instances
   sl.registerLazySingleton(() => FirebaseAuth.instance);
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
+  sl.registerLazySingleton(() => FirebaseStorage.instance);
+
+  // ── Features – Profile ──────────────────────────────────────────────────────
+
+  sl.registerFactory(
+    () => ProfileBloc(
+      getProfile: sl(),
+      updateProfile: sl(),
+      uploadProfilePhoto: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton(() => GetProfile(sl()));
+  sl.registerLazySingleton(() => UpdateProfile(sl()));
+  sl.registerLazySingleton(() => UploadProfilePhoto(sl()));
+
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remote: sl()),
+  );
+
+  sl.registerLazySingleton<ProfileFirebaseDataSource>(
+    () => ProfileFirebaseDataSourceImpl(
+      firestore: sl(),
+      auth: sl(),
+      storage: sl(),
+    ),
+  );
 
   // ── Features – Settings ─────────────────────────────────────────────────────
 

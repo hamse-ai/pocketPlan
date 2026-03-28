@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_plan/core/presentation/auth_wrapper.dart';
+import 'package:pocket_plan/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:pocket_plan/features/profile/presentation/bloc/profile_event.dart';
 import 'package:pocket_plan/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:pocket_plan/features/settings/presentation/bloc/settings_event.dart';
 import 'package:pocket_plan/features/settings/presentation/bloc/settings_state.dart';
@@ -22,9 +24,15 @@ class PocketPlanApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Provide SettingsBloc at the app level to enable theme switching
-    return BlocProvider(
-      create: (_) => di.sl<SettingsBloc>()..add(LoadSettingsEvent()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => di.sl<SettingsBloc>()..add(LoadSettingsEvent()),
+        ),
+        BlocProvider(
+          create: (_) => di.sl<ProfileBloc>()..add(LoadProfile()),
+        ),
+      ],
       child: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, state) {
           // Determine theme mode based on settings
