@@ -1,443 +1,447 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/theme/colors.dart';
-import '../../auth/presentation/pages/login_page.dart';
-import '../../auth/presentation/pages/signup_page.dart';
-import '../../auth/presentation/bloc/auth_bloc.dart';
-import '../../auth/presentation/bloc/auth_event.dart';
-import '../../help_support/presentation/pages/help_support_screen.dart';
-import '../../education/presentation/pages/tips_screen.dart';
+import 'package:pocket_plan/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:pocket_plan/features/auth/presentation/bloc/auth_event.dart';
+import 'package:pocket_plan/features/education/presentation/pages/tips_screen.dart';
+import 'package:pocket_plan/features/help_support/presentation/pages/help_support_screen.dart';
+import '../../profile/presentation/bloc/profile_bloc.dart';
+import '../../profile/presentation/bloc/profile_state.dart';
+import '../presentation/bloc/settings_bloc.dart';
+import '../presentation/bloc/settings_event.dart';
+import '../presentation/bloc/settings_state.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  Future<void> _showChangePasswordDialog(BuildContext context) async {
-    final passwordController = TextEditingController();
-    return showDialog(
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return BlocListener<SettingsBloc, SettingsState>(
+        listener: (context, state) {
+          if (state is SettingsSaved) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Settings saved successfully')),
+            );
+          }
+          if (state is PasswordChanged) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Password changed successfully')),
+            );
+          }
+          if (state is AccountDeleted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Account deleted successfully')),
+            );
+            context.read<AuthBloc>().add(CheckAuthStatusEvent());
+          }
+          if (state is DataDownloaded) {
+            _handleDataDownload(context, state.data);
+          }
+          if (state is SettingsError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header card ──────────────────────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                child: Card(
+                  color: cs.primary,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Settings',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: cs.onPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: 200,
+                          child: Text(
+                            'Manage your account and preferences',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: cs.onPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── Tabbed settings ──────────────────────────────────────────
+              const _SettingsTabView(),
+
+              const SizedBox(height: 24),
+
+              // ── Save button ──────────────────────────────────────────────
+              BlocBuilder<SettingsBloc, SettingsState>(
+                builder: (context, state) {
+                  final isLoading = state is SettingsLoading;
+                  return ElevatedButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            final bloc = context.read<SettingsBloc>();
+                            final current = bloc.state;
+                            if (current is SettingsLoaded) {
+                              bloc.add(SaveSettingsEvent(current.settings));
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cs.primary,
+                      foregroundColor: cs.onPrimary,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: isLoading
+                        ? SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: cs.onPrimary,
+                            ),
+                          )
+                        : const Text(
+                            'Save Preferences',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 32),
+
+              // ── Account management ───────────────────────────────────────
+              Text(
+                'Account Management',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Manage your account and security',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface.withValues(alpha: 0.65),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Download My Data
+              _AccountButton(
+                label: 'Download My Data',
+                onPressed: () {
+                  context.read<SettingsBloc>().add(DownloadUserDataEvent());
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Change Password
+              _AccountButton(
+                label: 'Change Password',
+                onPressed: () {
+                  _showChangePasswordDialog(context);
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Delete Account
+              SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _showDeleteAccountDialog(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.delete,
+                      foregroundColor: AppColors.onDelete,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Delete Account',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ── More ─────────────────────────────────────────────────────
+              Text(
+                'More',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              _SettingsNavButton(
+                title: 'Help & Support',
+                icon: Icons.help_outline,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _SettingsNavButton(
+                title: 'Tips',
+                icon: Icons.lightbulb_outline,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TipsScreen()),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+    );
+  }
+
+  void _handleDataDownload(BuildContext context, Map<String, dynamic> data) {
+    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+    
+    Share.share(
+      jsonString,
+      subject: 'My Pocket Plan Data',
+    );
+
+    showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Download Complete'),
+        content: const Text('Your data has been successfully downloaded and is ready to share or save.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context) {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Change Password'),
-        content: TextField(
-          controller: passwordController,
-          obscureText: true,
-          decoration: const InputDecoration(labelText: 'New Password'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: currentPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Current Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: newPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'New Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: confirmPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Confirm New Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
-              final newPassword = passwordController.text.trim();
-              if (newPassword.isNotEmpty) {
-                context.read<AuthBloc>().add(ChangePasswordEvent(newPassword));
-                Navigator.pop(context);
+              if (newPasswordController.text != confirmPasswordController.text) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Changing password...')),
+                  const SnackBar(content: Text('Passwords do not match')),
                 );
+                return;
               }
+
+              context.read<SettingsBloc>().add(
+                    ChangePasswordEvent(
+                      currentPassword: currentPasswordController.text,
+                      newPassword: newPasswordController.text,
+                    ),
+                  );
+              Navigator.pop(dialogContext);
             },
-            child: const Text('Save'),
+            child: const Text('Change Password'),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _showDeleteAccountDialog(BuildContext context) async {
-    return showDialog(
+  void _showDeleteAccountDialog(BuildContext context) {
+    final passwordController = TextEditingController();
+
+    showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Account'),
-        content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'This action cannot be undone. All your data will be permanently deleted.',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(
+                labelText: 'Confirm Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+          ],
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
-          TextButton(
-            onPressed: () {
-              context.read<AuthBloc>().add(DeleteAccountEvent());
-              Navigator.pop(context);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Settings Header Card
-          SizedBox(
-            width: double.infinity,
-            child: Card(
-              color: AppColors.primary,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.onPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: 200,
-                      child: Text(
-                        'Manage your account and preference',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: AppColors.onPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Tab Bar with rounded ends
-          _SettingsTabView(),
-
-          const SizedBox(height: 24),
-
-          // Save Preferences Button (only takes needed width)
           ElevatedButton(
-            onPressed: () {},
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              backgroundColor: AppColors.delete,
             ),
-            child: Text(
-              'Save Preferences',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-
-          const SizedBox(height: 32),
-
-          // Account Management Section (below tabs)
-          Text(
-            'Account Management',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
-            ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            'Manage your account and security',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.onSurfaceSecondary,
-            ),
-          ),
-          SizedBox(height: 16),
-
-          // Download My Data Button
-          SizedBox(
-            width: double.infinity,
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: AppColors.onPrimary,
-                  foregroundColor: AppColors.onSurface,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: AppColors.onSurface, width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'Download My Data',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 16),
-
-          // Change Password Button
-          SizedBox(
-            width: double.infinity,
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: OutlinedButton(
-                onPressed: () => _showChangePasswordDialog(context),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: AppColors.onPrimary,
-                  foregroundColor: AppColors.onSurface,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: AppColors.onSurface, width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'Change Password',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 16),
-
-          // Delete Account Button
-          SizedBox(
-            width: double.infinity,
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: ElevatedButton(
-                onPressed: () => _showDeleteAccountDialog(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.delete,
-                  foregroundColor: AppColors.onDelete,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Delete Account',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 24),
-
-          Text(
-            'More',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
-            ),
-          ),
-
-          SizedBox(height: 16),
-
-          _SettingsNavButton(
-            title: 'Help & Support',
-            icon: Icons.help_outline,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
-              );
+            onPressed: () {
+              context.read<SettingsBloc>().add(
+                    DeleteAccountEvent(password: passwordController.text),
+                  );
+              Navigator.pop(dialogContext);
             },
-          ),
-
-          SizedBox(height: 12),
-
-          _SettingsNavButton(
-            title: 'Tips',
-            icon: Icons.lightbulb_outline,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const TipsScreen()),
-              );
-            },
-          ),
-
-          SizedBox(height: 12),
-
-          _SettingsNavButton(
-            title: 'Sign In',
-            icon: Icons.login,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
-              );
-            },
-          ),
-
-          SizedBox(height: 12),
-
-          _SettingsNavButton(
-            title: 'Sign Up',
-            icon: Icons.person_add,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SignupPage()),
-              );
-            },
-          ),
-          
-          SizedBox(height: 12),
-          
-          _SettingsNavButton(
-            title: 'Sign Out',
-            icon: Icons.logout,
-            onTap: () {
-              context.read<AuthBloc>().add(SignOutEvent());
-            },
+            child: const Text('Delete Account'),
           ),
         ],
       ),
     );
   }
 }
+
+// ── Tab view ───────────────────────────────────────────────────────────────────
 
 class _SettingsTabView extends StatelessWidget {
+  const _SettingsTabView();
+
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return DefaultTabController(
-      length: 4,
+      length: 3,
       child: Column(
         children: [
-          // Custom TabBar with rounded container
           Container(
             height: 48,
-            padding: EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(25),
+              color: cs.onSurface.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(50),
             ),
             child: TabBar(
-              indicator: BoxDecoration(
-                color: AppColors.onPrimary,
-                borderRadius: BorderRadius.circular(25),
-              ),
-              labelColor: AppColors.onSurface,
-              unselectedLabelColor: AppColors.onSurfaceSecondary,
-              labelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.normal,
-              ),
-              dividerColor: Colors.transparent,
+              padding: const EdgeInsets.all(4),
               indicatorSize: TabBarIndicatorSize.tab,
-              splashFactory: NoSplash.splashFactory,
-              overlayColor: WidgetStateProperty.all(Colors.transparent),
-              tabs: [
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.person_outline, size: 16),
-                        SizedBox(width: 4),
-                        Text('Profile'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.notifications_outlined, size: 16),
-                        SizedBox(width: 4),
-                        Text('Notifs'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.lock_outline, size: 16),
-                        SizedBox(width: 4),
-                        Text('Privacy'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.palette_outlined, size: 16),
-                        SizedBox(width: 4),
-                        Text('Theme'),
-                      ],
-                    ),
-                  ),
-                ),
+              dividerColor: Colors.transparent,
+              indicator: BoxDecoration(
+                color: cs.primary,
+                borderRadius: BorderRadius.circular(50),
+              ),
+              labelColor: cs.onPrimary,
+              unselectedLabelColor: cs.onSurface,
+              tabs: const [
+                Tab(text: 'Profile'),
+                Tab(text: 'Notifications'),
+                Tab(text: 'Privacy'),
               ],
             ),
           ),
-
           const SizedBox(height: 16),
-
-          // TabBarView content
-          SizedBox(
-            height: 300,
-            child: TabBarView(
-              children: [
-                _ProfileTab(),
-                _NotificationsTab(),
-                _PrivacyTab(),
-                _AppearanceTab(),
-              ],
-            ),
+          Builder(
+            builder: (context) {
+              final tabController = DefaultTabController.of(context);
+              return AnimatedBuilder(
+                animation: tabController,
+                builder: (context, _) {
+                  return [
+                    const _ProfileTab(),
+                    const _NotificationsTab(),
+                    const _PrivacyTab(),
+                  ][tabController.index];
+                },
+              );
+            },
           ),
         ],
       ),
@@ -445,173 +449,326 @@ class _SettingsTabView extends StatelessWidget {
   }
 }
 
-// Profile Tab - Shorter content
-class _ProfileTab extends StatefulWidget {
-  @override
-  State<_ProfileTab> createState() => _ProfileTabState();
-}
+// ── Individual Tab Implementations ────────────────────────────────────────────
 
-class _ProfileTabState extends State<_ProfileTab> {
-  final TextEditingController fullNameController = TextEditingController(
-    text: 'John Doe',
-  );
-  final TextEditingController emailController = TextEditingController(
-    text: 'john@example.com',
-  );
+class _ProfileTab extends StatelessWidget {
+  const _ProfileTab();
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        // Profile Header
-        Text(
-          'Profile',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Update your personal information',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceSecondary,
-          ),
-        ),
-        SizedBox(height: 24),
+    final cs = Theme.of(context).colorScheme;
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        if (state is! SettingsLoaded) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-        // Full Name
-        Text(
-          'Full Name',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 8),
-        TextField(
-          controller: fullNameController,
-          decoration: InputDecoration(
-            hintText: 'Enter your full name',
-            filled: true,
-            fillColor: AppColors.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        SizedBox(height: 16),
+        final settings = state.settings;
 
-        // Email
-        Text(
-          'Email',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Account Information',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, profileState) {
+                  String name = 'Not set';
+                  String email = 'Not set';
+                  if (profileState is ProfileLoaded) {
+                    name = profileState.profile.fullName.isEmpty ? 'Not set' : profileState.profile.fullName;
+                    email = profileState.profile.email.isEmpty ? 'Not set' : profileState.profile.email;
+                  } else if (profileState is ProfileActionInProgress) {
+                    name = profileState.profile.fullName.isEmpty ? 'Not set' : profileState.profile.fullName;
+                    email = profileState.profile.email.isEmpty ? 'Not set' : profileState.profile.email;
+                  } else if (profileState is ProfileSaved) {
+                    name = profileState.profile.fullName.isEmpty ? 'Not set' : profileState.profile.fullName;
+                    email = profileState.profile.email.isEmpty ? 'Not set' : profileState.profile.email;
+                  }
+
+                  return Column(
+                    children: [
+                      // User Name Display
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.person_outline, color: cs.onSurface),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Name',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: cs.onSurface.withValues(alpha: 0.65),
+                                    ),
+                                  ),
+                                  Text(
+                                    name,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: cs.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Email Display
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.email_outlined, color: cs.onSurface),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Email',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: cs.onSurface.withValues(alpha: 0.65),
+                                    ),
+                                  ),
+                                  Text(
+                                    email,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: cs.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+
+              Text(
+                'Preferences',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              _NotificationToggleItem(
+                title: 'Show Balance',
+                subtitle: 'Display balance on home screen',
+                value: settings.showBalance,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(showBalance: value),
+                        ),
+                      );
+                },
+              ),
+            ],
           ),
-        ),
-        SizedBox(height: 8),
-        TextField(
-          controller: emailController,
-          decoration: InputDecoration(
-            hintText: 'user@example.com',
-            filled: true,
-            fillColor: AppColors.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
-
-  @override
-  void dispose() {
-    fullNameController.dispose();
-    emailController.dispose();
-    super.dispose();
-  }
 }
 
-// Notifications Tab
-class _NotificationsTab extends StatefulWidget {
-  @override
-  State<_NotificationsTab> createState() => _NotificationsTabState();
-}
-
-class _NotificationsTabState extends State<_NotificationsTab> {
-  bool toggle1 = true;
-  bool toggle2 = false;
-  bool toggle3 = true;
+class _NotificationsTab extends StatelessWidget {
+  const _NotificationsTab();
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        // Email Notifications Header
-        Text(
-          'Email Notifications',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Choose what updates you want to receive',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceSecondary,
-          ),
-        ),
-        SizedBox(height: 16),
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        if (state is! SettingsLoaded) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-        // Notification Toggle Items
-        _NotificationToggleItem(
-          title: 'Lean Period Warning',
-          subtitle: 'Get notified when balance may run low soon.',
-          value: toggle1,
-          onChanged: (value) {
-            setState(() {
-              toggle1 = value;
-            });
-          },
+        final settings = state.settings;
+
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _NotificationToggleItem(
+                title: 'Enable Notifications',
+                subtitle: 'Receive app notifications',
+                value: settings.notificationsEnabled,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(notificationsEnabled: value),
+                        ),
+                      );
+                },
+              ),
+              const SizedBox(height: 16),
+              _NotificationToggleItem(
+                title: 'Auto-Save Notifications',
+                subtitle: 'Get notified when transactions are saved',
+                value: settings.autoSaveNotifications,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(autoSaveNotifications: value),
+                        ),
+                      );
+                },
+              ),
+              const SizedBox(height: 16),
+              _NotificationToggleItem(
+                title: 'Weekly Summary',
+                subtitle: 'Receive weekly spending summary',
+                value: settings.weeklySummary,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(weeklySummary: value),
+                        ),
+                      );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PrivacyTab extends StatelessWidget {
+  const _PrivacyTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        if (state is! SettingsLoaded) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final settings = state.settings;
+        final cs = Theme.of(context).colorScheme;
+
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Data & Privacy',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _NotificationToggleItem(
+                title: 'Share Analytics',
+                subtitle: 'Help improve the app by sharing anonymous usage data',
+                value: settings.shareAnalytics,
+                onChanged: (value) {
+                  context.read<SettingsBloc>().add(
+                        UpdateSettingsEvent(
+                          settings.copyWith(shareAnalytics: value),
+                        ),
+                      );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+// ── Shared small widgets ──────────────────────────────────────────────────────
+
+class _ThemeOption extends StatelessWidget {
+  final String title;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ThemeOption({
+    required this.title,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.12)
+              : Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.transparent,
+            width: 2,
+          ),
         ),
-        SizedBox(height: 12),
-        _NotificationToggleItem(
-          title: 'Auto-Save Success Notifications',
-          subtitle: 'Get notified when you auto-save for emergency',
-          value: toggle2,
-          onChanged: (value) {
-            setState(() {
-              toggle2 = value;
-            });
-          },
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight:
+                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+          ],
         ),
-        SizedBox(height: 12),
-        _NotificationToggleItem(
-          title: 'Weekly Money Summary',
-          subtitle: 'Get provided with weekly summaries',
-          value: toggle3,
-          onChanged: (value) {
-            setState(() {
-              toggle3 = value;
-            });
-          },
-        ),
-      ],
+      ),
     );
   }
 }
@@ -631,6 +788,7 @@ class _NotificationToggleItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Expanded(
@@ -642,208 +800,27 @@ class _NotificationToggleItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.normal,
-                  color: AppColors.onSurface,
+                  color: cs.onSurface,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 subtitle,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,
-                  color: AppColors.onSurfaceSecondary,
+                  color: cs.onSurface.withValues(alpha: 0.65),
                 ),
               ),
             ],
           ),
         ),
-        SizedBox(width: 12),
+        const SizedBox(width: 12),
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppColors.onPrimary,
-          activeTrackColor: AppColors.primary,
-          inactiveThumbColor: AppColors.disabled,
-          inactiveTrackColor: AppColors.surface,
         ),
       ],
-    );
-  }
-}
-
-// Privacy Tab - Simpler content
-class _PrivacyTab extends StatefulWidget {
-  @override
-  State<_PrivacyTab> createState() => _PrivacyTabState();
-}
-
-class _PrivacyTabState extends State<_PrivacyTab> {
-  bool showBalance = true;
-  bool shareAnalytics = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        // Privacy Header
-        Text(
-          'Privacy Settings',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Control your privacy preferences',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceSecondary,
-          ),
-        ),
-        SizedBox(height: 16),
-
-        _NotificationToggleItem(
-          title: 'Show Balance on Home',
-          subtitle: 'Display your balance on the home screen',
-          value: showBalance,
-          onChanged: (value) {
-            setState(() {
-              showBalance = value;
-            });
-          },
-        ),
-        SizedBox(height: 12),
-        _NotificationToggleItem(
-          title: 'Share Anonymous Analytics',
-          subtitle: 'Help us improve the app with usage data',
-          value: shareAnalytics,
-          onChanged: (value) {
-            setState(() {
-              shareAnalytics = value;
-            });
-          },
-        ),
-      ],
-    );
-  }
-}
-
-// Appearance Tab
-class _AppearanceTab extends StatefulWidget {
-  @override
-  State<_AppearanceTab> createState() => _AppearanceTabState();
-}
-
-class _AppearanceTabState extends State<_AppearanceTab> {
-  String selectedTheme = 'Light';
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        // Appearance Header
-        Text(
-          'Appearance',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          'Customize how the app looks',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceSecondary,
-          ),
-        ),
-        SizedBox(height: 16),
-
-        // Theme Options
-        _ThemeOption(
-          title: 'Light',
-          isSelected: selectedTheme == 'Light',
-          onTap: () {
-            setState(() {
-              selectedTheme = 'Light';
-            });
-          },
-        ),
-        SizedBox(height: 12),
-        _ThemeOption(
-          title: 'Dark',
-          isSelected: selectedTheme == 'Dark',
-          onTap: () {
-            setState(() {
-              selectedTheme = 'Dark';
-            });
-          },
-        ),
-        SizedBox(height: 12),
-        _ThemeOption(
-          title: 'System Default',
-          isSelected: selectedTheme == 'System Default',
-          onTap: () {
-            setState(() {
-              selectedTheme = 'System Default';
-            });
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _ThemeOption extends StatelessWidget {
-  final String title;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ThemeOption({
-    required this.title,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected ? AppColors.primary : AppColors.onSurface,
-                ),
-              ),
-            ),
-            if (isSelected) Icon(Icons.check_circle, color: AppColors.primary),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -861,46 +838,60 @@ class _SettingsNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
-        leading: Icon(icon, color: AppColors.primary),
+        leading: Icon(icon, color: cs.primary),
         title: Text(title),
-        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
       ),
     );
   }
 }
 
-// ---------------- PLACEHOLDER PAGES ----------------
+class _AccountButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
 
-class HelpSupportPage extends StatelessWidget {
-  const HelpSupportPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Help & Support')),
-      body: const Center(
-        child: Text('Placeholder Help & Support Page'),
-      ),
-    );
-  }
-}
-
-class TipsPage extends StatelessWidget {
-  const TipsPage({super.key});
+  const _AccountButton({required this.label, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tips')),
-      body: const Center(
-        child: Text('Placeholder Tips Page'),
+    final cs = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: OutlinedButton(
+          onPressed: onPressed,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: cs.surface,
+            foregroundColor: cs.onSurface,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            side: BorderSide(color: cs.onSurface.withValues(alpha: 0.35), width: 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
       ),
     );
   }
