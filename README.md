@@ -5,7 +5,7 @@ A fully functional mobile application built with Flutter, applying Clean Archite
 
 ## Pre-requisites
 To build and run this application, ensure you have the following installed on your system:
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (version ^3.11.1 recommended)
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (version ^3.10.0 or higher recommended)
 - Android Studio or Xcode (for emulators and build tools)
 - Visual Studio Code (or your preferred IDE)
 
