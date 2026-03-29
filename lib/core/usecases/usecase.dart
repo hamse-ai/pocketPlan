@@ -15,7 +15,10 @@ abstract class UseCase<Type, Params> {
   Future<Either<Failure, Type>> call(Params params);
 }
 
+/// Used when a use case requires no input parameters
 class NoParams extends Equatable {
+```
+```
   const NoParams();
 
   @override
