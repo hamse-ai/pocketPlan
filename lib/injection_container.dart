@@ -15,8 +15,8 @@ import 'features/auth/domain/usecases/sign_in_with_email.dart';
 import 'features/auth/domain/usecases/sign_in_with_google.dart';
 import 'features/auth/domain/usecases/sign_out.dart';
 import 'features/auth/domain/usecases/sign_up_with_email.dart';
-import 'features/auth/domain/usecases/change_password.dart';
-import 'features/auth/domain/usecases/delete_account.dart';
+import 'features/auth/domain/usecases/change_password.dart' as auth_usecases;
+import 'features/auth/domain/usecases/delete_account.dart' as auth_usecases;
 import 'features/auth/domain/usecases/send_password_reset_email.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 
@@ -39,7 +39,7 @@ import 'features/settings/data/data_sources/settings_firebase_datasource.dart';
 import 'features/settings/data/data_sources/settings_local_datasource.dart';
 import 'features/settings/data/repositories/settings_repository_impl.dart';
 import 'features/settings/domain/repositories/settings_repository.dart';
-import 'features/settings/domain/usecases/account_management_usecases.dart';
+import 'features/settings/domain/usecases/account_management_usecases.dart' as settings_usecases;
 import 'features/settings/domain/usecases/get_settings.dart';
 import 'features/settings/domain/usecases/save_settings.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
@@ -78,8 +78,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SignInWithGoogle(sl()));
   sl.registerLazySingleton(() => SignOut(sl()));
   sl.registerLazySingleton(() => GetCurrentUser(sl()));
-  sl.registerLazySingleton(() => ChangePassword(sl()));
-  sl.registerLazySingleton(() => DeleteAccount(sl()));
+  sl.registerLazySingleton(() => auth_usecases.ChangePassword(sl()));
+  sl.registerLazySingleton(() => auth_usecases.DeleteAccount(sl()));
   sl.registerLazySingleton(() => SendPasswordResetEmail(sl()));
 
   sl.registerLazySingleton<AuthRepository>(
@@ -164,9 +164,9 @@ Future<void> init() async {
   // Use cases
   sl.registerLazySingleton(() => GetSettings(sl()));
   sl.registerLazySingleton(() => SaveSettings(sl()));
-  sl.registerLazySingleton(() => ChangePassword(sl()));
-  sl.registerLazySingleton(() => DeleteAccount(auth: sl(), firestore: sl()));
-  sl.registerLazySingleton(() => DownloadUserData(auth: sl(), firestore: sl()));
+  sl.registerLazySingleton(() => settings_usecases.ChangePassword(sl()));
+  sl.registerLazySingleton(() => settings_usecases.DeleteAccount(auth: sl(), firestore: sl()));
+  sl.registerLazySingleton(() => settings_usecases.DownloadUserData(auth: sl(), firestore: sl()));
 
   // Repository
   sl.registerLazySingleton<SettingsRepository>(

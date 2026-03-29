@@ -4,13 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../core/theme/colors.dart';
 import 'package:pocket_plan/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:pocket_plan/features/auth/presentation/bloc/auth_event.dart';
+import 'package:pocket_plan/features/auth/presentation/bloc/auth_event.dart' as auth_events;
 import 'package:pocket_plan/features/education/presentation/pages/tips_screen.dart';
 import 'package:pocket_plan/features/help_support/presentation/pages/help_support_screen.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
 import '../../profile/presentation/bloc/profile_state.dart';
 import '../presentation/bloc/settings_bloc.dart';
-import '../presentation/bloc/settings_event.dart';
+import '../presentation/bloc/settings_event.dart' as settings_events;
 import '../presentation/bloc/settings_state.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -35,7 +35,7 @@ class SettingsPage extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Account deleted successfully')),
             );
-            context.read<AuthBloc>().add(CheckAuthStatusEvent());
+            context.read<AuthBloc>().add(auth_events.CheckAuthStatusEvent());
           }
           if (state is DataDownloaded) {
             _handleDataDownload(context, state.data);
@@ -110,7 +110,7 @@ class SettingsPage extends StatelessWidget {
                             final bloc = context.read<SettingsBloc>();
                             final current = bloc.state;
                             if (current is SettingsLoaded) {
-                              bloc.add(SaveSettingsEvent(current.settings));
+                              bloc.add(settings_events.SaveSettingsEvent(current.settings));
                             }
                           },
                     style: ElevatedButton.styleFrom(
@@ -166,7 +166,7 @@ class SettingsPage extends StatelessWidget {
               _AccountButton(
                 label: 'Download My Data',
                 onPressed: () {
-                  context.read<SettingsBloc>().add(DownloadUserDataEvent());
+                  context.read<SettingsBloc>().add(settings_events.DownloadUserDataEvent());
                 },
               ),
               const SizedBox(height: 16),
@@ -330,7 +330,7 @@ class SettingsPage extends StatelessWidget {
               }
 
               context.read<SettingsBloc>().add(
-                    ChangePasswordEvent(
+                    settings_events.ChangePasswordEvent(
                       currentPassword: currentPasswordController.text,
                       newPassword: newPasswordController.text,
                     ),
@@ -380,7 +380,7 @@ class SettingsPage extends StatelessWidget {
             ),
             onPressed: () {
               context.read<SettingsBloc>().add(
-                    DeleteAccountEvent(password: passwordController.text),
+                    settings_events.DeleteAccountEvent(password: passwordController.text),
                   );
               Navigator.pop(dialogContext);
             },
@@ -590,7 +590,7 @@ class _ProfileTab extends StatelessWidget {
                 value: settings.showBalance,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
-                        UpdateSettingsEvent(
+                        settings_events.UpdateSettingsEvent(
                           settings.copyWith(showBalance: value),
                         ),
                       );
@@ -627,7 +627,7 @@ class _NotificationsTab extends StatelessWidget {
                 value: settings.notificationsEnabled,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
-                        UpdateSettingsEvent(
+                        settings_events.UpdateSettingsEvent(
                           settings.copyWith(notificationsEnabled: value),
                         ),
                       );
@@ -640,7 +640,7 @@ class _NotificationsTab extends StatelessWidget {
                 value: settings.autoSaveNotifications,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
-                        UpdateSettingsEvent(
+                        settings_events.UpdateSettingsEvent(
                           settings.copyWith(autoSaveNotifications: value),
                         ),
                       );
@@ -653,7 +653,7 @@ class _NotificationsTab extends StatelessWidget {
                 value: settings.weeklySummary,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
-                        UpdateSettingsEvent(
+                        settings_events.UpdateSettingsEvent(
                           settings.copyWith(weeklySummary: value),
                         ),
                       );
@@ -700,7 +700,7 @@ class _PrivacyTab extends StatelessWidget {
                 value: settings.shareAnalytics,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
-                        UpdateSettingsEvent(
+                        settings_events.UpdateSettingsEvent(
                           settings.copyWith(shareAnalytics: value),
                         ),
                       );

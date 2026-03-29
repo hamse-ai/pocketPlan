@@ -6,8 +6,6 @@ import 'package:intl/intl.dart';
 
 /// Main dashboard screen displaying Safe-to-Spend, savings, and lean period alerts
 class HomePage extends StatefulWidget {
-```
-```
   const HomePage({super.key});
 
   @override
@@ -17,8 +15,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
  // Default saving percentage applied to available balance
 double _savingPercentage = 20.0;
-```
-```
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +47,6 @@ double _savingPercentage = 20.0;
             final daysLeft = lastDayOfMonth.day - now.day + 1;
 
             // Lean period is triggered when daily budget falls below RWF 3,000
-```
-```
             double dailyBudget = daysLeft > 0 ? safeToSpend / daysLeft : 0;
             bool isLeanPeriod = dailyBudget > 0 && dailyBudget < 3000;
             if (safeToSpend <= 0 && rawBalance > 0) {
@@ -65,8 +59,6 @@ double _savingPercentage = 20.0;
 
 
             return Scaffold(
-```
-```
                backgroundColor: const Color(0xFFF2F4F3),
               body: Column(
                 children: [
