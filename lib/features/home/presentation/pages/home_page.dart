@@ -12,7 +12,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  double _savingPercentage = 20.0; // Default 20%
+ // Default saving percentage applied to available balance
+double _savingPercentage = 20.0;
+```
+```
 
   @override
   Widget build(BuildContext context) {
