@@ -3,6 +3,13 @@
 
 A fully functional mobile application built with Flutter, applying Clean Architecture principles and a Firebase backend for data management and authentication.
 
+## Features
+- Safe-to-Spend daily calculator
+- Multi-source income logging  
+- Expense tracking and categorization
+- Lean Period early warning alerts
+- Emergency buffer savings
+
 ## Pre-requisites
 To build and run this application, ensure you have the following installed on your system:
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (version ^3.10.0 or higher recommended)
