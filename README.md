@@ -8,6 +8,7 @@ To build and run this application, ensure you have the following installed on yo
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (version ^3.10.0 or higher recommended)
 - Android Studio or Xcode (for emulators and build tools)
 - Visual Studio Code (or your preferred IDE)
+- Firebase project with Authentication and Firestore enabled
 
 ## Getting Started
 
