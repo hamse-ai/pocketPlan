@@ -17,22 +17,12 @@ import 'features/auth/domain/usecases/sign_out.dart';
 import 'features/auth/domain/usecases/sign_up_with_email.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 
-import 'package:pocket_plan/features/profile/data/data_sources/profile_firebase_datasource.dart';
-import 'package:pocket_plan/features/profile/data/repositories/profile_repository_impl.dart';
-import 'package:pocket_plan/features/profile/domain/repositories/profile_repository.dart';
-import 'package:pocket_plan/features/profile/domain/usecases/get_profile.dart';
-import 'package:pocket_plan/features/profile/domain/usecases/update_profile.dart';
-import 'package:pocket_plan/features/profile/domain/usecases/upload_profile_photo.dart';
-import 'package:pocket_plan/features/profile/presentation/bloc/profile_bloc.dart';
-
-import 'package:pocket_plan/features/settings/data/data_sources/settings_firebase_datasource.dart';
-import 'package:pocket_plan/features/settings/data/data_sources/settings_local_datasource.dart';
-import 'package:pocket_plan/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:pocket_plan/features/settings/domain/repositories/settings_repository.dart';
-import 'package:pocket_plan/features/settings/domain/usecases/account_management_usecases.dart';
-import 'package:pocket_plan/features/settings/domain/usecases/get_settings.dart';
-import 'package:pocket_plan/features/settings/domain/usecases/save_settings.dart';
-import 'package:pocket_plan/features/settings/presentation/bloc/settings_bloc.dart';
+import 'features/income/data/datasources/transaction_remote_data_source.dart';
+import 'features/income/data/repositories/transaction_repository_impl.dart';
+import 'features/income/domain/repositories/transaction_repository.dart';
+import 'features/income/domain/usecases/transaction_usecases.dart';
+import 'features/income/presentation/bloc/income_bloc.dart';
+import 'features/budget/presentation/bloc/expense_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -77,63 +67,39 @@ Future<void> init() async {
     ),
   );
 
-  // ── Profile ─────────────────────────────────────────────────────────────────
-  sl.registerFactory(
-    () => ProfileBloc(
-      getProfile: sl(),
-      updateProfile: sl(),
-      uploadProfilePhoto: sl(),
+  // Features - Transactions (Income/Expense)
+  // Bloc
+  sl.registerFactory(() => IncomeBloc(
+        getTransactions: sl(),
+        addTransactionUseCase: sl(),
+        toggleTransactionStatusUseCase: sl(),
+      ));
+  sl.registerFactory(() => ExpenseBloc(
+        getTransactions: sl(),
+        addTransactionUseCase: sl(),
+        toggleTransactionStatusUseCase: sl(),
+      ));
+
+  // Use cases
+  sl.registerLazySingleton(() => GetTransactions(sl()));
+  sl.registerLazySingleton(() => AddTransaction(sl()));
+  sl.registerLazySingleton(() => ToggleTransactionStatus(sl()));
+
+  // Repository
+  sl.registerLazySingleton<TransactionRepository>(
+    () => TransactionRepositoryImpl(
+      remoteDataSource: sl(),
+      firebaseAuth: sl(),
     ),
   );
 
-  sl.registerLazySingleton(() => GetProfile(sl()));
-  sl.registerLazySingleton(() => UpdateProfile(sl()));
-  sl.registerLazySingleton(() => UploadProfilePhoto(sl()));
-
-  sl.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(remote: sl()),
+  // Data sources
+  sl.registerLazySingleton<TransactionRemoteDataSource>(
+    () => TransactionRemoteDataSourceImpl(firestore: sl()),
   );
 
-  sl.registerLazySingleton<ProfileFirebaseDataSource>(
-    () => ProfileFirebaseDataSourceImpl(
-      firestore: sl(),
-      auth: sl(),
-      storage: sl(),
-    ),
-  );
-
-  // ── Settings ────────────────────────────────────────────────────────────────
-  sl.registerFactory(
-    () => SettingsBloc(
-      getSettings: sl(),
-      saveSettings: sl(),
-      changePassword: sl(),
-      deleteAccount: sl(),
-      downloadUserData: sl(),
-    ),
-  );
-
-  sl.registerLazySingleton(() => GetSettings(sl()));
-  sl.registerLazySingleton(() => SaveSettings(sl()));
-  sl.registerLazySingleton(() => ChangePassword(sl()));
-  sl.registerLazySingleton(() => DeleteAccount(auth: sl(), firestore: sl()));
-  sl.registerLazySingleton(() => DownloadUserData(auth: sl(), firestore: sl()));
-
-  sl.registerLazySingleton<SettingsRepository>(
-    () => SettingsRepositoryImpl(
-      firebaseDataSource: sl(),
-      localDataSource: sl(),
-    ),
-  );
-
-  sl.registerLazySingleton<SettingsFirebaseDataSource>(
-    () => SettingsFirebaseDataSourceImpl(
-      firestore: sl(),
-      auth: sl(),
-    ),
-  );
-
-  sl.registerLazySingleton<SettingsLocalDataSource>(
-    () => SettingsLocalDataSourceImpl(sharedPreferences: sl()),
-  );
+  // External
+  sl.registerLazySingleton(() => FirebaseAuth.instance);
+  sl.registerLazySingleton(() => FirebaseFirestore.instance);
+  sl.registerLazySingleton(() => gsi.GoogleSignIn());
 }

@@ -1,110 +1,95 @@
+import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_plan/features/income/domain/entities/transaction.dart';
+import 'package:pocket_plan/features/income/domain/usecases/transaction_usecases.dart';
 
 part 'expense_event.dart';
 part 'expense_state.dart';
 
-/// Mock expense data reflecting typical Rwandan cost-of-living patterns.
-final List<Transaction> _mockExpenseTransactions = [
-  Transaction(
-    id: 'exp_001',
-    title: 'Monthly Rent',
-    amount: 120000,
-    date: DateTime(2026, 3, 1),
-    isActive: true,
-  ),
-  Transaction(
-    id: 'exp_002',
-    title: 'Grocery Shopping',
-    amount: 35000,
-    date: DateTime(2026, 3, 5),
-    isActive: true,
-  ),
-  Transaction(
-    id: 'exp_003',
-    title: 'Transport (Moto/Bus)',
-    amount: 15000,
-    date: DateTime(2026, 3, 10),
-    isActive: true,
-  ),
-  Transaction(
-    id: 'exp_004',
-    title: 'Internet & Airtime',
-    amount: 20000,
-    date: DateTime(2026, 2, 28),
-    isActive: false,
-  ),
-  Transaction(
-    id: 'exp_005',
-    title: 'School Fees Contribution',
-    amount: 50000,
-    date: DateTime(2026, 2, 20),
-    isActive: true,
-  ),
-  Transaction(
-    id: 'exp_006',
-    title: 'Medical / Health',
-    amount: 12000,
-    date: DateTime(2026, 2, 15),
-    isActive: false,
-  ),
-];
-
 class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
-  ExpenseBloc() : super(const ExpenseInitial()) {
+  final GetTransactions getTransactions;
+  final AddTransaction addTransactionUseCase;
+  final ToggleTransactionStatus toggleTransactionStatusUseCase;
+  StreamSubscription? _transactionsSubscription;
+
+  ExpenseBloc({
+    required this.getTransactions,
+    required this.addTransactionUseCase,
+    required this.toggleTransactionStatusUseCase,
+  }) : super(const ExpenseInitial()) {
     on<LoadExpenseTransactions>(_onLoad);
     on<ToggleExpenseTransactionStatus>(_onToggle);
     on<AddExpenseTransaction>(_onAdd);
     on<LoadMoreExpenseTransactions>(_onLoadMore);
+    on<_TransactionsUpdated>(_onTransactionsUpdated);
   }
 
-  Future<void> _onLoad(
+  void _onTransactionsUpdated(
+    _TransactionsUpdated event,
+    Emitter<ExpenseState> emit,
+  ) {
+    emit(ExpenseLoaded(transactions: event.transactions));
+  }
+
+  void _onLoad(
     LoadExpenseTransactions event,
     Emitter<ExpenseState> emit,
-  ) async {
+  ) {
     emit(const ExpenseLoading());
-    await Future.delayed(const Duration(seconds: 1));
-    emit(ExpenseLoaded(transactions: List.from(_mockExpenseTransactions)));
+    _transactionsSubscription?.cancel();
+    _transactionsSubscription = getTransactions('expense').listen(
+      (transactions) {
+        add(_TransactionsUpdated(transactions: transactions));
+      },
+      onError: (error) {
+        // Handle error if needed
+      },
+    );
   }
 
   void _onToggle(
     ToggleExpenseTransactionStatus event,
     Emitter<ExpenseState> emit,
-  ) {
-    if (state is ExpenseLoaded) {
-      final current = (state as ExpenseLoaded).transactions;
-      final List<Transaction> updated = current.map((t) {
-        return t.id == event.id ? t.copyWith(isActive: event.value) : t;
-      }).toList();
-      emit(ExpenseLoaded(transactions: updated));
+  ) async {
+    try {
+      await toggleTransactionStatusUseCase('expense', event.id, event.value);
+    } catch (e) {
+      // Handle error
     }
   }
 
   void _onAdd(
     AddExpenseTransaction event,
     Emitter<ExpenseState> emit,
-  ) {
-    if (state is ExpenseLoaded) {
-      final current = (state as ExpenseLoaded).transactions;
-      emit(ExpenseLoaded(transactions: [event.transaction, ...current]));
+  ) async {
+    try {
+      await addTransactionUseCase('expense', event.transaction);
+    } catch (e) {
+      // Handle error
     }
   }
 
-  Future<void> _onLoadMore(
+  void _onLoadMore(
     LoadMoreExpenseTransactions event,
     Emitter<ExpenseState> emit,
-  ) async {
-    if (state is ExpenseLoaded) {
-      final current = (state as ExpenseLoaded).transactions;
-      await Future.delayed(const Duration(milliseconds: 800));
-      final List<Transaction> more = _mockExpenseTransactions
-          .map((t) => t.copyWith(
-                id: '${t.id}_p2',
-                date: t.date.subtract(const Duration(days: 30)),
-              ))
-          .toList();
-      emit(ExpenseLoaded(transactions: [...current, ...more]));
-    }
+  ) {
+    // Pagination logic later
   }
+
+  @override
+  Future<void> close() {
+    _transactionsSubscription?.cancel();
+    return super.close();
+  }
+}
+
+// Private event for updating transactions from stream
+class _TransactionsUpdated extends ExpenseEvent {
+  final List<Transaction> transactions;
+
+  const _TransactionsUpdated({required this.transactions});
+
+  @override
+  List<Object> get props => [transactions];
 }
