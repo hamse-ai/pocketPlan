@@ -99,6 +99,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       (failure) async => emit(ProfileLoaded(base, lastError: failure.message)),
       (url) async {
         final withPhoto = base.copyWith(photoUrl: url);
+        await updateProfile(withPhoto);
         emit(ProfileLoaded(withPhoto));
       },
     );

@@ -5,7 +5,6 @@ class Settings extends Equatable {
   final bool weeklySummary;
   final bool showBalance;
   final bool shareAnalytics;
-  final String theme;
   final bool notificationsEnabled;
 
   // Profile fields — populated from Firebase once auth is wired up.
@@ -18,7 +17,6 @@ class Settings extends Equatable {
     required this.weeklySummary,
     required this.showBalance,
     required this.shareAnalytics,
-    required this.theme,
     required this.notificationsEnabled,
     this.userName = '',
     this.email = '',
@@ -29,7 +27,6 @@ class Settings extends Equatable {
     bool? weeklySummary,
     bool? showBalance,
     bool? shareAnalytics,
-    String? theme,
     bool? notificationsEnabled,
     String? userName,
     String? email,
@@ -40,7 +37,6 @@ class Settings extends Equatable {
       weeklySummary: weeklySummary ?? this.weeklySummary,
       showBalance: showBalance ?? this.showBalance,
       shareAnalytics: shareAnalytics ?? this.shareAnalytics,
-      theme: theme ?? this.theme,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       userName: userName ?? this.userName,
       email: email ?? this.email,
@@ -53,7 +49,6 @@ class Settings extends Equatable {
         weeklySummary,
         showBalance,
         shareAnalytics,
-        theme,
         notificationsEnabled,
         userName,
         email,

@@ -77,6 +77,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     ChangePasswordEvent event,
     Emitter<SettingsState> emit,
   ) async {
+    final currentState = state;
+    final currentSettings = currentState is SettingsLoaded ? currentState.settings : null;
+
     emit(PasswordChanging());
 
     final result = await changePassword(
@@ -87,8 +90,14 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     );
 
     result.fold(
-      (failure) => emit(SettingsError(failure.message)),
-      (_) => emit(PasswordChanged()),
+      (failure) {
+        emit(SettingsError(failure.message));
+        if (currentSettings != null) emit(SettingsLoaded(currentSettings));
+      },
+      (_) {
+        emit(PasswordChanged());
+        if (currentSettings != null) emit(SettingsLoaded(currentSettings));
+      },
     );
   }
 
@@ -96,6 +105,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     DeleteAccountEvent event,
     Emitter<SettingsState> emit,
   ) async {
+    final currentState = state;
+    final currentSettings = currentState is SettingsLoaded ? currentState.settings : null;
+
     emit(AccountDeleting());
 
     final result = await deleteAccount(
@@ -103,8 +115,14 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     );
 
     result.fold(
-      (failure) => emit(SettingsError(failure.message)),
-      (_) => emit(AccountDeleted()),
+      (failure) {
+        emit(SettingsError(failure.message));
+        if (currentSettings != null) emit(SettingsLoaded(currentSettings));
+      },
+      (_) {
+        emit(AccountDeleted());
+        if (currentSettings != null) emit(SettingsLoaded(currentSettings));
+      },
     );
   }
 
@@ -112,13 +130,22 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     DownloadUserDataEvent event,
     Emitter<SettingsState> emit,
   ) async {
+    final currentState = state;
+    final currentSettings = currentState is SettingsLoaded ? currentState.settings : null;
+
     emit(DataDownloading());
 
     final result = await downloadUserData(NoParams());
 
     result.fold(
-      (failure) => emit(SettingsError(failure.message)),
-      (data) => emit(DataDownloaded(data)),
+      (failure) {
+        emit(SettingsError(failure.message));
+        if (currentSettings != null) emit(SettingsLoaded(currentSettings));
+      },
+      (data) {
+        emit(DataDownloaded(data));
+        if (currentSettings != null) emit(SettingsLoaded(currentSettings));
+      },
     );
   }
 }

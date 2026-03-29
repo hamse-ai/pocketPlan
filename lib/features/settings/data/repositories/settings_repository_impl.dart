@@ -31,7 +31,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
         weeklySummary: firebaseSettings.weeklySummary,
         showBalance: firebaseSettings.showBalance,
         shareAnalytics: firebaseSettings.shareAnalytics,
-        theme: firebaseSettings.theme,
         notificationsEnabled: firebaseSettings.notificationsEnabled,
         userName: profile['userName'] ?? '',
         email: profile['email'] ?? '',

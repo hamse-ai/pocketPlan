@@ -7,6 +7,8 @@ import 'package:pocket_plan/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:pocket_plan/features/auth/presentation/bloc/auth_event.dart';
 import 'package:pocket_plan/features/education/presentation/pages/tips_screen.dart';
 import 'package:pocket_plan/features/help_support/presentation/pages/help_support_screen.dart';
+import '../../profile/presentation/bloc/profile_bloc.dart';
+import '../../profile/presentation/bloc/profile_state.dart';
 import '../presentation/bloc/settings_bloc.dart';
 import '../presentation/bloc/settings_event.dart';
 import '../presentation/bloc/settings_state.dart';
@@ -258,8 +260,18 @@ class SettingsPage extends StatelessWidget {
       subject: 'My Pocket Plan Data',
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Data ready to share or save')),
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Download Complete'),
+        content: const Text('Your data has been successfully downloaded and is ready to share or save.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -389,42 +401,47 @@ class _SettingsTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return DefaultTabController(
-      length: 4,
+      length: 3,
       child: Column(
         children: [
           Container(
             height: 48,
             decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: cs.onSurface.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(50),
             ),
             child: TabBar(
+              padding: const EdgeInsets.all(4),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
               indicator: BoxDecoration(
                 color: cs.primary,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(50),
               ),
               labelColor: cs.onPrimary,
               unselectedLabelColor: cs.onSurface,
-              dividerColor: Colors.transparent,
               tabs: const [
-                Tab(text: 'General'),
+                Tab(text: 'Profile'),
                 Tab(text: 'Notifications'),
                 Tab(text: 'Privacy'),
-                Tab(text: 'Appearance'),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 400,
-            child: TabBarView(
-              children: [
-                const _GeneralTab(),
-                const _NotificationsTab(),
-                const _PrivacyTab(),
-                const _AppearanceTab(),
-              ],
-            ),
+          Builder(
+            builder: (context) {
+              final tabController = DefaultTabController.of(context);
+              return AnimatedBuilder(
+                animation: tabController,
+                builder: (context, _) {
+                  return [
+                    const _ProfileTab(),
+                    const _NotificationsTab(),
+                    const _PrivacyTab(),
+                  ][tabController.index];
+                },
+              );
+            },
           ),
         ],
       ),
@@ -434,8 +451,8 @@ class _SettingsTabView extends StatelessWidget {
 
 // ── Individual Tab Implementations ────────────────────────────────────────────
 
-class _GeneralTab extends StatelessWidget {
-  const _GeneralTab();
+class _ProfileTab extends StatelessWidget {
+  const _ProfileTab();
 
   @override
   Widget build(BuildContext context) {
@@ -462,77 +479,98 @@ class _GeneralTab extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               
-              // User Name Display
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.person_outline, color: cs.onSurface),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Name',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: cs.onSurface.withValues(alpha: 0.65),
-                            ),
-                          ),
-                          Text(
-                            settings.userName.isEmpty ? 'Not set' : settings.userName,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: cs.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
+              BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, profileState) {
+                  String name = 'Not set';
+                  String email = 'Not set';
+                  if (profileState is ProfileLoaded) {
+                    name = profileState.profile.fullName.isEmpty ? 'Not set' : profileState.profile.fullName;
+                    email = profileState.profile.email.isEmpty ? 'Not set' : profileState.profile.email;
+                  } else if (profileState is ProfileActionInProgress) {
+                    name = profileState.profile.fullName.isEmpty ? 'Not set' : profileState.profile.fullName;
+                    email = profileState.profile.email.isEmpty ? 'Not set' : profileState.profile.email;
+                  } else if (profileState is ProfileSaved) {
+                    name = profileState.profile.fullName.isEmpty ? 'Not set' : profileState.profile.fullName;
+                    email = profileState.profile.email.isEmpty ? 'Not set' : profileState.profile.email;
+                  }
 
-              // Email Display
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.email_outlined, color: cs.onSurface),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Email',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: cs.onSurface.withValues(alpha: 0.65),
+                  return Column(
+                    children: [
+                      // User Name Display
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.person_outline, color: cs.onSurface),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Name',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: cs.onSurface.withValues(alpha: 0.65),
+                                    ),
+                                  ),
+                                  Text(
+                                    name,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: cs.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          Text(
-                            settings.email.isEmpty ? 'Not set' : settings.email,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: cs.onSurface,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: 12),
+
+                      // Email Display
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: cs.surface,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.email_outlined, color: cs.onSurface),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Email',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: cs.onSurface.withValues(alpha: 0.65),
+                                    ),
+                                  ),
+                                  Text(
+                                    email,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: cs.onSurface,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 24),
 
@@ -676,75 +714,6 @@ class _PrivacyTab extends StatelessWidget {
   }
 }
 
-class _AppearanceTab extends StatelessWidget {
-  const _AppearanceTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-      builder: (context, state) {
-        if (state is! SettingsLoaded) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        final settings = state.settings;
-        final cs = Theme.of(context).colorScheme;
-
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Theme',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: cs.onSurface,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _ThemeOption(
-                title: 'Light',
-                isSelected: settings.theme == 'Light',
-                onTap: () {
-                  context.read<SettingsBloc>().add(
-                        UpdateSettingsEvent(
-                          settings.copyWith(theme: 'Light'),
-                        ),
-                      );
-                },
-              ),
-              const SizedBox(height: 12),
-              _ThemeOption(
-                title: 'Dark',
-                isSelected: settings.theme == 'Dark',
-                onTap: () {
-                  context.read<SettingsBloc>().add(
-                        UpdateSettingsEvent(
-                          settings.copyWith(theme: 'Dark'),
-                        ),
-                      );
-                },
-              ),
-              const SizedBox(height: 12),
-              _ThemeOption(
-                title: 'System Default',
-                isSelected: settings.theme == 'System Default',
-                onTap: () {
-                  context.read<SettingsBloc>().add(
-                        UpdateSettingsEvent(
-                          settings.copyWith(theme: 'System Default'),
-                        ),
-                      );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
 
 // ── Shared small widgets ──────────────────────────────────────────────────────
 

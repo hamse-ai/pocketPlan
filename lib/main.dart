@@ -39,17 +39,10 @@ class PocketPlanApp extends StatelessWidget {
       ],
       child: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, settingsState) {
-          ThemeMode themeMode = ThemeMode.light;
-          if (settingsState is SettingsLoaded) {
-            themeMode = AppTheme.getThemeMode(settingsState.settings.theme);
-          }
-
           return MaterialApp(
             title: 'Pocket Plan',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
             home: BlocListener<AuthBloc, AuthState>(
               listenWhen: (prev, curr) => curr is Authenticated,
               listener: (context, state) {

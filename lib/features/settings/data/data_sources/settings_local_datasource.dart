@@ -30,7 +30,6 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
       weeklySummary: true,
       showBalance: true,
       shareAnalytics: false,
-      theme: 'Light',
       notificationsEnabled: true,
       userName: '',
       email: '',

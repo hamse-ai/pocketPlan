@@ -47,7 +47,6 @@ class SettingsFirebaseDataSourceImpl implements SettingsFirebaseDataSource {
         weeklySummary: true,
         showBalance: true,
         shareAnalytics: false,
-        theme: 'Light',
         notificationsEnabled: true,
         userName: '',
         email: '',
