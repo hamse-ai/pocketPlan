@@ -37,7 +37,7 @@ This project strictly adheres to **Clean Architecture** patterns.
 
 The application code inside `lib/` is organized as follows:
 - **core/**: Contains application-wide utilities, error handling, networking code, and generic usecases.
-- **features/**: Contains the main features of the application, separated by domain (e.g., `auth`, `tasks`).
+- **features/**: Contains the main features of the application,separated by domain (e.g., `auth`, `income`, `budget`, `profile`, `settings`).
   - Each feature is further divided into three layers:
     - **data/**: Deals with external data (DataSources, Repositories implementations, Models).
     - **domain/**: Contains the core business logic (Entities, Repositories interfaces, UseCases).
