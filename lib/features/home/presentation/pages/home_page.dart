@@ -29,7 +29,7 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      // ✅ REMOVED bottomNavigationBar — handled by MainNavigation
+
     );
   }
 
