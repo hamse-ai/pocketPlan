@@ -18,9 +18,11 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  // TODO: Replace with actual authentication state from AuthBloc
-  // For now, using a simple boolean. Your auth team will integrate this with Firebase Auth
+   // TODO: Replace with actual authentication state from AuthBloc
+  // For now, using a simple boolean to be replaced with Firebase Auth integration
   bool _isLoggedIn = true;
+```
+```
 
   @override
   Widget build(BuildContext context) {
