@@ -3,6 +3,7 @@ import 'colors.dart';
 import 'textStyles.dart';
 
 class AppTheme {
+  // ── Light Theme ──────────────────────────────────────────────────────────────
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: AppColors.primary,
@@ -12,6 +13,7 @@ class AppTheme {
       onPrimary: AppColors.onPrimary,
       surface: AppColors.surface,
       onSurface: AppColors.onSurface,
+      error: AppColors.warning,
     ),
 
     appBarTheme: AppBarTheme(
@@ -47,6 +49,29 @@ class AppTheme {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
         textStyle: AppTextStyles.button,
+      ),
+    ),
+
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.onPrimary;
+        }
+        return AppColors.disabled;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return AppColors.surface;
+      }),
+    ),
+
+    cardTheme: CardThemeData(
+      color: AppColors.surface,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
     ),
 

@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,16 +7,16 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/auth/presentation/pages/login_page.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
+import 'features/profile/presentation/bloc/profile_event.dart';
+import 'features/settings/presentation/bloc/settings_bloc.dart';
+import 'features/settings/presentation/bloc/settings_event.dart';
+import 'features/settings/presentation/bloc/settings_state.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
-  // Ensure Flutter bindings are initialized before calling Firebase or GetIt
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  
-  // Initialize dependency injection
   await di.init();
-
   runApp(const PocketPlanApp());
 }
 
@@ -31,24 +30,41 @@ class PocketPlanApp extends StatelessWidget {
         BlocProvider(
           create: (_) => di.sl<AuthBloc>()..add(CheckAuthStatusEvent()),
         ),
-      ],
-      child: MaterialApp(
-        title: 'Pocket Plan',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is AuthLoading) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            } else if (state is Authenticated) {
-              return const MainNavigation();
-            } else {
-              return const LoginPage();
-            }
-          },
+        BlocProvider(
+          create: (_) => di.sl<SettingsBloc>()..add(LoadSettingsEvent()),
         ),
+        BlocProvider(
+          create: (_) => di.sl<ProfileBloc>()..add(LoadProfile()),
+        ),
+      ],
+      child: BlocBuilder<SettingsBloc, SettingsState>(
+        builder: (context, settingsState) {
+          return MaterialApp(
+            title: 'Pocket Plan',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            home: BlocListener<AuthBloc, AuthState>(
+              listenWhen: (prev, curr) => curr is Authenticated,
+              listener: (context, state) {
+                context.read<SettingsBloc>().add(LoadSettingsEvent());
+                context.read<ProfileBloc>().add(LoadProfile());
+              },
+              child: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  if (authState is AuthLoading) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (authState is Authenticated) {
+                    return const MainNavigation();
+                  }
+                  return const LoginPage();
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }
