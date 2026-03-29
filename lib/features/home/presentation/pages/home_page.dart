@@ -1,35 +1,90 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pocket_plan/features/budget/presentation/bloc/expense_bloc.dart';
+import 'package:pocket_plan/features/income/presentation/bloc/income_bloc.dart';
+import 'package:intl/intl.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  double _savingPercentage = 20.0; // Default 20%
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F3),
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+    return BlocBuilder<IncomeBloc, IncomeState>(
+      builder: (context, incomeState) {
+        return BlocBuilder<ExpenseBloc, ExpenseState>(
+          builder: (context, expenseState) {
+            double totalIncome = 0;
+            if (incomeState is IncomeLoaded) {
+              totalIncome = incomeState.transactions.fold(
+                  0, (sum, item) => sum + item.amount);
+            }
+
+            double totalExpense = 0;
+            if (expenseState is ExpenseLoaded) {
+              totalExpense = expenseState.transactions.fold(
+                  0, (sum, item) => sum + item.amount);
+            }
+
+            double rawBalance = totalIncome - totalExpense;
+
+            // Calculations based on slider
+            double savedAmount = rawBalance > 0 ? rawBalance * (_savingPercentage / 100) : 0;
+            double safeToSpend = rawBalance > 0 ? rawBalance - savedAmount : 0;
+            double baseEmergencySaving = 400000;
+            double totalEmergencySaving = baseEmergencySaving + savedAmount;
+
+            final now = DateTime.now();
+            final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+            final daysLeft = lastDayOfMonth.day - now.day + 1;
+
+            // Lean period logic based on Safe To Spend instead of raw balance
+            double dailyBudget = daysLeft > 0 ? safeToSpend / daysLeft : 0;
+            bool isLeanPeriod = dailyBudget > 0 && dailyBudget < 3000;
+            if (safeToSpend <= 0 && rawBalance > 0) {
+              isLeanPeriod = true;
+            } else if (rawBalance <= 0) {
+              isLeanPeriod = true;
+            }
+
+            final currentMonth = DateFormat('MMMM').format(now);
+
+            return Scaffold(
+               backgroundColor: const Color(0xFFF2F4F3),
+              body: Column(
                 children: [
-                  _buildBalanceCard(),
-                  const SizedBox(height: 12),
-                  _buildSafeToSpendCard(),
-                  const SizedBox(height: 12),
-                  _buildWarningBanner(),
-                  const SizedBox(height: 12),
-                  _buildEmergencySavingCard(),
-                  const SizedBox(height: 20),
+                  _buildHeader(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          _buildSavingsUI(),
+                          const SizedBox(height: 12),
+                          _buildSafeToSpendCard(safeToSpend, currentMonth),
+                          const SizedBox(height: 12),
+                          if (isLeanPeriod) ...[
+                            _buildWarningBanner(daysLeft),
+                            const SizedBox(height: 12),
+                          ],
+                          _buildEmergencySavingCard(totalEmergencySaving),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-      // ✅ REMOVED bottomNavigationBar — handled by MainNavigation
+            );
+          },
+        );
+      },
     );
   }
 
@@ -82,7 +137,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceCard() {
+  Widget _buildSavingsUI() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -93,33 +148,54 @@ class HomePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Current Balance',
-            style: TextStyle(
-              color: Color(0xFFB2DFDB),
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            '\$2,450',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          GestureDetector(
-            onTap: () {},
-            child: const Text(
-              'See Details',
-              style: TextStyle(
-                color: Color(0xFF4CAF50),
-                fontSize: 13,
-                decoration: TextDecoration.underline,
-                decorationColor: Color(0xFF4CAF50),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Savings Allocation',
+                style: TextStyle(
+                  color: Color(0xFFB2DFDB),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
+              Text(
+                '${_savingPercentage.toInt()}%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: const Color(0xFF4CAF50),
+              inactiveTrackColor: Colors.white24,
+              thumbColor: Colors.white,
+              overlayColor: const Color(0xFF4CAF50).withAlpha(50), // Replaced withAlpha for compatibility
+              trackHeight: 6.0,
+            ),
+            child: Slider(
+              value: _savingPercentage,
+              min: 0,
+              max: 100,
+              divisions: 20,
+              onChanged: (value) {
+                setState(() {
+                  _savingPercentage = value;
+                });
+              },
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Adjust how much of your balance goes to Emergency Savings.',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
             ),
           ),
         ],
@@ -127,7 +203,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSafeToSpendCard() {
+  Widget _buildSafeToSpendCard(double safeAmount, String monthName) {
+    final currencyFormatter = NumberFormat.currency(symbol: 'RWF ', decimalDigits: 0);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -140,8 +217,8 @@ class HomePage extends StatelessWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 'Safe to Spend',
                 style: TextStyle(
                   fontSize: 15,
@@ -149,19 +226,19 @@ class HomePage extends StatelessWidget {
                   color: Color(0xFF1B3A3A),
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'For January',
-                style: TextStyle(
+                'For $monthName',
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
                 ),
               ),
             ],
           ),
-          const Text(
-            '\$1,500',
-            style: TextStyle(
+          Text(
+            currencyFormatter.format(safeAmount),
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1B3A3A),
@@ -172,7 +249,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildWarningBanner() {
+  Widget _buildWarningBanner(int daysLeft) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -193,8 +270,8 @@ class HomePage extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
+              children: [
+                const Text(
                   'Lean Period Ahead',
                   style: TextStyle(
                     fontSize: 14,
@@ -202,10 +279,10 @@ class HomePage extends StatelessWidget {
                     color: Color(0xFFB71C1C),
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Try to reduce spending for the next 5 days',
-                  style: TextStyle(
+                  'Try to reduce spending for the next $daysLeft days',
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFFE53935),
                   ),
@@ -218,8 +295,10 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildEmergencySavingCard() {
-    const double savedPercent = 0.80;
+  Widget _buildEmergencySavingCard(double totalEmergencySaving) {
+    double target = 500000;
+    double savedPercent = (totalEmergencySaving / target).clamp(0.0, 1.0);
+    final currencyFormatter = NumberFormat.currency(symbol: 'RWF ', decimalDigits: 0);
 
     return Container(
       width: double.infinity,
@@ -233,8 +312,8 @@ class HomePage extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 'Current Emergency Saving',
                 style: TextStyle(
                   fontSize: 13,
@@ -242,8 +321,8 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               Text(
-                '\$400',
-                style: TextStyle(
+                currencyFormatter.format(totalEmergencySaving),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1B3A3A),
@@ -275,14 +354,14 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
-                'Saved: 80%',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                'Saved: ${(savedPercent * 100).toStringAsFixed(0)}%',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
               Text(
-                'Target: \$500',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                'Target: ${currencyFormatter.format(target)}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
