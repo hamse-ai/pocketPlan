@@ -13,7 +13,10 @@ abstract class Failure extends Equatable {
   List<Object> get props => [message];
 }
 
+/// Thrown when a remote server request fails
 class ServerFailure extends Failure {
+```
+```
   const ServerFailure(String message) : super(message);
 }
 
