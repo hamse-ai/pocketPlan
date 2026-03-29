@@ -76,6 +76,7 @@ class ExpenseScreen extends StatelessWidget {
         if (state is ExpenseLoaded) {
           final transactions = state.transactions;
           return Column(
+            key: const Key('expense_screen_column'),
             children: [
               Expanded(
                 child: transactions.isEmpty

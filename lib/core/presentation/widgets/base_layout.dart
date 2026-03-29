@@ -41,6 +41,7 @@ class BaseLayout extends StatelessWidget {
           ),
         ),
         child: BottomNavigationBar(
+          key: const Key('bottom_nav_bar'),
           currentIndex: currentIndex,
           onTap: onNavigationTap,
           type: BottomNavigationBarType.fixed,
