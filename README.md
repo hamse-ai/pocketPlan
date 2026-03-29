@@ -1,4 +1,5 @@
-# Pocket Plan
+# Pocket Plan 
+> Master Your Money, Whatever It Looks Like
 
 A fully functional mobile application built with Flutter, applying Clean Architecture principles and a Firebase backend for data management and authentication.
 
