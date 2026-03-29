@@ -89,17 +89,23 @@ Future<void> init() async {
   sl.registerFactory(() => IncomeBloc(
         getTransactions: sl(),
         addTransactionUseCase: sl(),
+        updateTransactionUseCase: sl(),
+        deleteTransactionUseCase: sl(),
         toggleTransactionStatusUseCase: sl(),
       ));
   sl.registerFactory(() => ExpenseBloc(
         getTransactions: sl(),
         addTransactionUseCase: sl(),
+        updateTransactionUseCase: sl(),
+        deleteTransactionUseCase: sl(),
         toggleTransactionStatusUseCase: sl(),
       ));
 
   // Use cases
   sl.registerLazySingleton(() => GetTransactions(sl()));
   sl.registerLazySingleton(() => AddTransaction(sl()));
+  sl.registerLazySingleton(() => UpdateTransaction(sl()));
+  sl.registerLazySingleton(() => DeleteTransaction(sl()));
   sl.registerLazySingleton(() => ToggleTransactionStatus(sl()));
 
   // Repository

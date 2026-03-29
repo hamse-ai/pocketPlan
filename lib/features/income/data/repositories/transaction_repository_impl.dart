@@ -36,4 +36,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<void> toggleTransactionStatus(String type, String transactionId, bool isActive) async {
     await remoteDataSource.toggleTransactionStatus(_userId, type, transactionId, isActive);
   }
+
+  @override
+  Future<void> updateTransaction(String type, Transaction transaction) async {
+    await remoteDataSource.updateTransaction(_userId, type, transaction);
+  }
+
+  @override
+  Future<void> deleteTransaction(String type, String transactionId) async {
+    await remoteDataSource.deleteTransaction(_userId, type, transactionId);
+  }
 }

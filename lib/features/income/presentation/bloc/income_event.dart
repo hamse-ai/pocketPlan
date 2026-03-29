@@ -33,6 +33,24 @@ class AddIncomeTransaction extends IncomeEvent {
   List<Object?> get props => [transaction];
 }
 
+class UpdateIncomeTransaction extends IncomeEvent {
+  final Transaction transaction;
+
+  const UpdateIncomeTransaction({required this.transaction});
+
+  @override
+  List<Object?> get props => [transaction];
+}
+
+class DeleteIncomeTransaction extends IncomeEvent {
+  final String id;
+
+  const DeleteIncomeTransaction({required this.id});
+
+  @override
+  List<Object?> get props => [id];
+}
+
 /// Load additional (paginated) transactions.
 class LoadMoreIncomeTransactions extends IncomeEvent {
   const LoadMoreIncomeTransactions();

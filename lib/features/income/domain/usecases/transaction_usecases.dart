@@ -30,3 +30,23 @@ class ToggleTransactionStatus {
     return repository.toggleTransactionStatus(type, transactionId, isActive);
   }
 }
+
+class UpdateTransaction {
+  final TransactionRepository repository;
+
+  UpdateTransaction(this.repository);
+
+  Future<void> call(String type, Transaction transaction) {
+    return repository.updateTransaction(type, transaction);
+  }
+}
+
+class DeleteTransaction {
+  final TransactionRepository repository;
+
+  DeleteTransaction(this.repository);
+
+  Future<void> call(String type, String transactionId) {
+    return repository.deleteTransaction(type, transactionId);
+  }
+}

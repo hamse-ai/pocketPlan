@@ -43,7 +43,7 @@ double _savingPercentage = 20.0;
             // Calculations based on slider
             double savedAmount = rawBalance > 0 ? rawBalance * (_savingPercentage / 100) : 0;
             double safeToSpend = rawBalance > 0 ? rawBalance - savedAmount : 0;
-            double baseEmergencySaving = 400000;
+            double baseEmergencySaving = 0;
             double totalEmergencySaving = baseEmergencySaving + savedAmount;
 
             final now = DateTime.now();

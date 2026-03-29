@@ -7,6 +7,8 @@ class TransactionTile extends StatelessWidget {
   final double amount;
   final bool isActive;
   final ValueChanged<bool> onToggle;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const TransactionTile({
     super.key,
@@ -15,6 +17,8 @@ class TransactionTile extends StatelessWidget {
     required this.amount,
     required this.isActive,
     required this.onToggle,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -69,6 +73,25 @@ class TransactionTile extends StatelessWidget {
                 value: isActive,
                 onChanged: onToggle,
                 activeThumbColor: const Color(0xFF006B5F),
+              ),
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'edit' && onEdit != null) {
+                    onEdit!();
+                  } else if (value == 'delete' && onDelete != null) {
+                    onDelete!();
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Text('Delete'),
+                  ),
+                ],
               ),
             ],
           ),

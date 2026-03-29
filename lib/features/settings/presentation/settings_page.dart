@@ -180,6 +180,15 @@ class SettingsPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // Log Out
+              _AccountButton(
+                label: 'Log Out',
+                onPressed: () {
+                  context.read<AuthBloc>().add(SignOutEvent());
+                },
+              ),
+              const SizedBox(height: 16),
+
               // Delete Account
               SizedBox(
                 width: double.infinity,

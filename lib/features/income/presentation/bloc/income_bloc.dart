@@ -10,17 +10,23 @@ part 'income_state.dart';
 class IncomeBloc extends Bloc<IncomeEvent, IncomeState> {
   final GetTransactions getTransactions;
   final AddTransaction addTransactionUseCase;
+  final UpdateTransaction updateTransactionUseCase;
+  final DeleteTransaction deleteTransactionUseCase;
   final ToggleTransactionStatus toggleTransactionStatusUseCase;
   StreamSubscription? _transactionsSubscription;
 
   IncomeBloc({
     required this.getTransactions,
     required this.addTransactionUseCase,
+    required this.updateTransactionUseCase,
+    required this.deleteTransactionUseCase,
     required this.toggleTransactionStatusUseCase,
   }) : super(const IncomeInitial()) {
     on<LoadIncomeTransactions>(_onLoad);
     on<ToggleIncomeTransactionStatus>(_onToggle);
     on<AddIncomeTransaction>(_onAdd);
+    on<UpdateIncomeTransaction>(_onUpdate);
+    on<DeleteIncomeTransaction>(_onDelete);
     on<LoadMoreIncomeTransactions>(_onLoadMore);
     on<_TransactionsUpdated>(_onTransactionsUpdated);
   }
@@ -65,6 +71,28 @@ class IncomeBloc extends Bloc<IncomeEvent, IncomeState> {
   ) async {
     try {
       await addTransactionUseCase('income', event.transaction);
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  void _onUpdate(
+    UpdateIncomeTransaction event,
+    Emitter<IncomeState> emit,
+  ) async {
+    try {
+      await updateTransactionUseCase('income', event.transaction);
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  void _onDelete(
+    DeleteIncomeTransaction event,
+    Emitter<IncomeState> emit,
+  ) async {
+    try {
+      await deleteTransactionUseCase('income', event.id);
     } catch (e) {
       // Handle error
     }

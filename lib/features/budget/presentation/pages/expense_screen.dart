@@ -104,6 +104,59 @@ class ExpenseScreen extends StatelessWidget {
                                         id: t.id, value: val),
                                   );
                             },
+                            onEdit: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<ExpenseBloc>(),
+                                  child: AddTransactionBottomSheet(
+                                    label: 'Category',
+                                    initialTitle: t.title,
+                                    initialAmount: t.amount,
+                                    initialDate: t.date,
+                                    buttonLabel: 'Save',
+                                    onAdd: (title, amount, date) {
+                                      final updatedTx = Transaction(
+                                        id: t.id,
+                                        title: title,
+                                        amount: amount,
+                                        date: date,
+                                        isActive: t.isActive,
+                                      );
+                                      context.read<ExpenseBloc>().add(
+                                        UpdateExpenseTransaction(transaction: updatedTx),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                            onDelete: () {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Delete Transaction'),
+                                  content: const Text('Are you sure you want to delete this transaction?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        context.read<ExpenseBloc>().add(
+                                          DeleteExpenseTransaction(id: t.id),
+                                        );
+                                        Navigator.pop(ctx);
+                                      },
+                                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           );
                         },
                       ),

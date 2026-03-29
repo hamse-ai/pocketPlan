@@ -6,11 +6,19 @@ import 'package:intl/intl.dart';
 class AddTransactionBottomSheet extends StatefulWidget {
   final String label;
   final void Function(String title, double amount, DateTime date) onAdd;
+  final String? initialTitle;
+  final double? initialAmount;
+  final DateTime? initialDate;
+  final String buttonLabel;
 
   const AddTransactionBottomSheet({
     super.key,
     this.label = 'Source',
     required this.onAdd,
+    this.initialTitle,
+    this.initialAmount,
+    this.initialDate,
+    this.buttonLabel = 'Add',
   });
 
   @override
@@ -21,9 +29,19 @@ class AddTransactionBottomSheet extends StatefulWidget {
 class _AddTransactionBottomSheetState
     extends State<AddTransactionBottomSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  late final TextEditingController _titleController;
+  late final TextEditingController _amountController;
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.initialTitle);
+    _amountController = TextEditingController(
+      text: widget.initialAmount != null ? widget.initialAmount.toString() : '',
+    );
+    _selectedDate = widget.initialDate ?? DateTime.now();
+  }
 
   @override
   void dispose() {
@@ -98,7 +116,7 @@ class _AddTransactionBottomSheetState
             ),
 
             Text(
-              'Add ${widget.label}',
+              '${widget.initialTitle != null ? 'Edit' : 'Add'} ${widget.label}',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -192,9 +210,9 @@ class _AddTransactionBottomSheetState
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Add',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  widget.buttonLabel,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

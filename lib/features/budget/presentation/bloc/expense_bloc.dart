@@ -10,17 +10,23 @@ part 'expense_state.dart';
 class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
   final GetTransactions getTransactions;
   final AddTransaction addTransactionUseCase;
+  final UpdateTransaction updateTransactionUseCase;
+  final DeleteTransaction deleteTransactionUseCase;
   final ToggleTransactionStatus toggleTransactionStatusUseCase;
   StreamSubscription? _transactionsSubscription;
 
   ExpenseBloc({
     required this.getTransactions,
     required this.addTransactionUseCase,
+    required this.updateTransactionUseCase,
+    required this.deleteTransactionUseCase,
     required this.toggleTransactionStatusUseCase,
   }) : super(const ExpenseInitial()) {
     on<LoadExpenseTransactions>(_onLoad);
     on<ToggleExpenseTransactionStatus>(_onToggle);
     on<AddExpenseTransaction>(_onAdd);
+    on<UpdateExpenseTransaction>(_onUpdate);
+    on<DeleteExpenseTransaction>(_onDelete);
     on<LoadMoreExpenseTransactions>(_onLoadMore);
     on<_TransactionsUpdated>(_onTransactionsUpdated);
   }
@@ -65,6 +71,28 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
   ) async {
     try {
       await addTransactionUseCase('expense', event.transaction);
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  void _onUpdate(
+    UpdateExpenseTransaction event,
+    Emitter<ExpenseState> emit,
+  ) async {
+    try {
+      await updateTransactionUseCase('expense', event.transaction);
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  void _onDelete(
+    DeleteExpenseTransaction event,
+    Emitter<ExpenseState> emit,
+  ) async {
+    try {
+      await deleteTransactionUseCase('expense', event.id);
     } catch (e) {
       // Handle error
     }

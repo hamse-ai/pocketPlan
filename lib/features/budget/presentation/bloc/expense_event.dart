@@ -30,6 +30,24 @@ class AddExpenseTransaction extends ExpenseEvent {
   List<Object?> get props => [transaction];
 }
 
+class UpdateExpenseTransaction extends ExpenseEvent {
+  final Transaction transaction;
+
+  const UpdateExpenseTransaction({required this.transaction});
+
+  @override
+  List<Object?> get props => [transaction];
+}
+
+class DeleteExpenseTransaction extends ExpenseEvent {
+  final String id;
+
+  const DeleteExpenseTransaction({required this.id});
+
+  @override
+  List<Object?> get props => [id];
+}
+
 class LoadMoreExpenseTransactions extends ExpenseEvent {
   const LoadMoreExpenseTransactions();
 }
