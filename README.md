@@ -1,12 +1,21 @@
-# Pocket Plan
+# Pocket Plan 
+> Master Your Money, Whatever It Looks Like
 
 A fully functional mobile application built with Flutter, applying Clean Architecture principles and a Firebase backend for data management and authentication.
 
+## Features
+- Safe-to-Spend daily calculator
+- Multi-source income logging  
+- Expense tracking and categorization
+- Lean Period early warning alerts
+- Emergency buffer savings
+
 ## Pre-requisites
 To build and run this application, ensure you have the following installed on your system:
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (version ^3.11.1 recommended)
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (version ^3.10.0 or higher recommended)
 - Android Studio or Xcode (for emulators and build tools)
 - Visual Studio Code (or your preferred IDE)
+- Firebase project with Authentication and Firestore enabled
 
 ## Getting Started
 
@@ -36,7 +45,7 @@ This project strictly adheres to **Clean Architecture** patterns.
 
 The application code inside `lib/` is organized as follows:
 - **core/**: Contains application-wide utilities, error handling, networking code, and generic usecases.
-- **features/**: Contains the main features of the application, separated by domain (e.g., `auth`, `tasks`).
+- **features/**: Contains the main features of the application,separated by domain (e.g., `auth`, `income`, `budget`, `profile`, `settings`).
   - Each feature is further divided into three layers:
     - **data/**: Deals with external data (DataSources, Repositories implementations, Models).
     - **domain/**: Contains the core business logic (Entities, Repositories interfaces, UseCases).
@@ -52,3 +61,8 @@ To run the widget and unit tests:
 ```bash
 flutter test
 ```
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+This project is for academic purposes — African Leadership University, 2025.

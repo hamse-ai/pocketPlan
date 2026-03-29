@@ -8,6 +8,8 @@ import 'package:pocket_plan/features/income/presentation/pages/income_screen.dar
 import 'widgets/base_layout.dart';
 import 'package:pocket_plan/features/profile/presentation/pages/profile_page.dart';
 import 'package:pocket_plan/features/settings/presentation/settings_page.dart';
+import 'package:pocket_plan/injection_container.dart' as di;
+
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -53,10 +55,10 @@ class _MainNavigationState extends State<MainNavigation> {
     return MultiBlocProvider(
       providers: [
         BlocProvider<IncomeBloc>(
-          create: (_) => IncomeBloc()..add(const LoadIncomeTransactions()),
+          create: (_) => di.sl<IncomeBloc>()..add(const LoadIncomeTransactions()),
         ),
         BlocProvider<ExpenseBloc>(
-          create: (_) => ExpenseBloc()..add(const LoadExpenseTransactions()),
+          create: (_) => di.sl<ExpenseBloc>()..add(const LoadExpenseTransactions()),
         ),
       ],
       child: BaseLayout(
