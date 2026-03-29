@@ -4,7 +4,10 @@ import 'package:pocket_plan/features/budget/presentation/bloc/expense_bloc.dart'
 import 'package:pocket_plan/features/income/presentation/bloc/income_bloc.dart';
 import 'package:intl/intl.dart';
 
+/// Main dashboard screen displaying Safe-to-Spend, savings, and lean period alerts
 class HomePage extends StatefulWidget {
+```
+```
   const HomePage({super.key});
 
   @override
