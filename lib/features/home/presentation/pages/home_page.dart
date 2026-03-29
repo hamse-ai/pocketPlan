@@ -55,7 +55,10 @@ class _HomePageState extends State<HomePage> {
 
             final currentMonth = DateFormat('MMMM').format(now);
 
+
             return Scaffold(
+```
+```
                backgroundColor: const Color(0xFFF2F4F3),
               body: Column(
                 children: [
