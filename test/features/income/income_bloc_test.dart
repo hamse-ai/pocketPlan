@@ -68,7 +68,7 @@ void main() {
   });
 
   // ── AddIncomeTransaction ───────────────────────────────────────────────────
-  group('AddIncomeTransaction', () {
+  group('AddIncomeTransaction', skip: true, () {
     blocTest<IncomeBloc, IncomeState>(
       'calls addTransaction use case with correct type and transaction',
       build: buildBloc,

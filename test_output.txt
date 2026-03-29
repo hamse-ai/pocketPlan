@@ -1,0 +1,222 @@
+00:00 +0: loading C:/Users/USER/Documents/PocketPlan/pocketPlan/test/core/dummy_test.dart
+00:00 +0: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/core/dummy_test.dart: Initial dummy test to verify setup
+00:00 +1: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/core/failures_test.dart: Failure classes ServerFailure holds correct message
+00:00 +2: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/core/failures_test.dart: Failure classes AuthFailure holds correct message
+00:00 +3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/core/failures_test.dart: Failure classes CacheFailure holds correct message
+00:00 +4: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/core/failures_test.dart: Failure classes Failures support value equality via Equatable
+00:00 +5: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/core/failures_test.dart: Failure classes Different failure types are not equal even with same message
+00:00 +6: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/core/failures_test.dart: Failure classes Failures have the correct props
+00:01 +7: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: initial state is AuthInitial
+00:01 +8: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: CheckAuthStatusEvent emits [AuthLoading, Authenticated] when user is logged in
+00:01 +9: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: CheckAuthStatusEvent emits [AuthLoading, Unauthenticated] when no user is logged in
+00:01 +10: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: SignInWithEmailEvent emits [AuthLoading, Authenticated] on successful email sign-in
+00:01 +11: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: SignInWithEmailEvent emits [AuthLoading, AuthError] on failed email sign-in
+00:01 +12: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: SignUpWithEmailEvent emits [AuthLoading, Authenticated] on successful registration
+00:01 +13: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: SignUpWithEmailEvent emits [AuthLoading, AuthError] when email is already taken
+00:01 +14: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: SignInWithGoogleEvent emits [AuthLoading, Authenticated] on successful Google sign-in
+00:01 +15: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: SignInWithGoogleEvent emits [AuthLoading, AuthError] when Google sign-in is cancelled
+00:01 +16: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: SignOutEvent emits [AuthLoading, Unauthenticated] on successful sign-out
+00:01 +17: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: SignOutEvent emits [AuthLoading, AuthError] when sign-out fails
+00:01 +18: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_bloc_test.dart: Authenticated state holds the correct user entity
+00:01 +19: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: SignInWithEmail UseCase returns UserEntity on successful sign-in
+00:01 +20: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: SignInWithEmail UseCase returns AuthFailure when credentials are wrong
+00:01 +21: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: SignUpWithEmail UseCase returns UserEntity on successful registration
+00:01 +22: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: SignUpWithEmail UseCase returns ServerFailure when registration fails
+00:01 +23: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: SignInWithGoogle UseCase returns UserEntity on successful Google sign-in
+00:01 +24: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: SignInWithGoogle UseCase returns AuthFailure when Google sign-in is cancelled
+00:01 +25: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: SignOut UseCase returns Right(void) on successful sign-out
+00:01 +26: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: SignOut UseCase returns ServerFailure when sign-out fails
+00:01 +27: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: GetCurrentUser UseCase returns UserEntity when a user is logged in
+00:01 +28: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_usecases_test.dart: GetCurrentUser UseCase returns AuthFailure when no user is logged in
+00:02 +29: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:03 +30: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:03 +31: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:03 +32: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:03 +33: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:04 +34: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:04 +35: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:04 +36: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:05 +36 -1: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:05 +36 -1: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/budget/expense_bloc_test.dart: AddExpenseTransaction calls addTransaction use case with correct type and transaction [E]
+  Bad state: A test tried to use `any` or `captureAny` on a parameter of type `Transaction`, but
+  registerFallbackValue was not previously called to register a fallback value for `Transaction`.
+  
+  To fix, do:
+  
+  ```
+  void main() {
+    setUpAll(() {
+      registerFallbackValue(/* create a dummy instance of `Transaction` */);
+    });
+  }
+  ```
+  
+  This instance of `Transaction` will only be passed around, but never be interacted with.
+  Therefore, if `Transaction` is a function, it does not have to return a valid object and
+  could throw unconditionally.
+  If you cannot easily create an instance of `Transaction`, consider defining a `Fake`:
+  
+  ```
+  class MyTypeFake extends Fake implements MyType {}
+  
+  void main() {
+    setUpAll(() {
+      registerFallbackValue(MyTypeFake());
+    });
+  }
+  ```
+  
+  Fallbacks are required because mocktail has to know of a valid `Transaction` to prevent
+  TypeErrors from being thrown in Dart's sound null safe mode, while still
+  providing a convenient syntax.
+  
+  package:mocktail/src/_register_matcher.dart 49:5    _getFallbackValue
+  package:mocktail/src/_register_matcher.dart 160:25  _registerMatcher
+  package:mocktail/src/_register_matcher.dart 104:10  any
+  test\features\budget\expense_bloc_test.dart 77:39   main.<fn>.<fn>.<fn>
+  package:mocktail/src/mocktail.dart 211:9            when.<fn>
+  test\features\budget\expense_bloc_test.dart 77:13   main.<fn>.<fn>
+  package:bloc_test/src/bloc_test.dart 199:20         testBloc.<fn>
+  package:bloc_test/src/bloc_test.dart 252:15         _runZonedGuarded.<fn>
+  dart:async                                          runZonedGuarded
+  package:bloc_test/src/bloc_test.dart 251:3          _runZonedGuarded
+  package:bloc_test/src/bloc_test.dart 198:11         testBloc
+  package:bloc_test/src/bloc_test.dart 156:13         blocTest.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                          _Completer.completeError
+  package:bloc_test/src/bloc_test.dart 255:43         _runZonedGuarded.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                          _CustomZone.registerBinaryCallback
+  package:bloc_test/src/bloc_test.dart 252:5          _runZonedGuarded.<fn>
+  dart:async                                          runZonedGuarded
+  package:bloc_test/src/bloc_test.dart 251:3          _runZonedGuarded
+  package:bloc_test/src/bloc_test.dart 198:11         testBloc
+  package:bloc_test/src/bloc_test.dart 156:13         blocTest.<fn>
+  
+00:05 +37 -1: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows Sign In button in initial state
+00:05 +38 -1: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/budget/expense_bloc_test.dart: Stream updates emits ExpenseLoaded each time the stream emits new data
+00:05 +39 -1: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows CircularProgressIndicator while loading
+Pending timers:
+Timer (duration: 0:00:01.000000, periodic: false), created:
+#0      new FakeTimer._ (package:fake_async/fake_async.dart:342:62)
+#1      FakeAsync._createTimer (package:fake_async/fake_async.dart:260:29)
+#2      FakeAsync.run.<anonymous closure> (package:fake_async/fake_async.dart:185:15)
+#6      main.<anonymous closure>.<anonymous closure>.<anonymous closure> (file:///C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart:105:31)
+#7      Mock.noSuchMethod (package:mocktail/src/mocktail.dart:131:37)
+#8      MockSignInWithEmail.call (file:///C:/Users/USER/Documents/PocketPlan/pocketPlan/test/helpers/test_helpers.dart:18:7)
+#9      AuthBloc._onSignInWithEmail (package:pocket_plan/features/auth/presentation/bloc/auth_bloc.dart:44:41)
+#10     Bloc.on.<anonymous closure>.handleEvent (package:bloc/src/bloc.dart:226:26)
+#11     Bloc.on.<anonymous closure> (package:bloc/src/bloc.dart:237:9)
+#20     CastStreamSubscription._onData (dart:_internal/async_cast.dart:95:11)
+#51     FakeAsync.run.<anonymous closure>.<anonymous closure> (package:fake_async/fake_async.dart:189:18)
+#52     FakeAsync.flushMicrotasks (package:fake_async/fake_async.dart:200:32)
+#53     AutomatedTestWidgetsFlutterBinding.runTest.<anonymous closure> (package:flutter_test/src/binding.dart:2206:17)
+(elided 56 frames from dart:async and package:stack_trace)
+
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+A Timer is still pending even after the widget tree was disposed.
+'package:flutter_test/src/binding.dart':
+Failed assertion: line 2242 pos 12: '!timersPending'
+
+When the exception was thrown, this was the stack:
+#2      AutomatedTestWidgetsFlutterBinding._verifyInvariants (package:flutter_test/src/binding.dart:2242:12)
+#3      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1703:7)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 3 frames from class _AssertionError and package:stack_trace)
+
+The test description was:
+  shows CircularProgressIndicator while loading
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:06 +39 -2: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:06 +39 -2: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/auth/auth_widget_test.dart: Auth Widget Tests shows CircularProgressIndicator while loading [E]
+  Test failed. See exception logs above.
+  The test description was: shows CircularProgressIndicator while loading
+  
+00:07 +40 -2: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:07 +41 -2: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:07 +42 -2: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:07 +43 -2: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:07 +44 -2: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +44 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +44 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/income/income_bloc_test.dart: AddIncomeTransaction calls addTransaction use case with correct type and transaction [E]
+  Bad state: A test tried to use `any` or `captureAny` on a parameter of type `Transaction`, but
+  registerFallbackValue was not previously called to register a fallback value for `Transaction`.
+  
+  To fix, do:
+  
+  ```
+  void main() {
+    setUpAll(() {
+      registerFallbackValue(/* create a dummy instance of `Transaction` */);
+    });
+  }
+  ```
+  
+  This instance of `Transaction` will only be passed around, but never be interacted with.
+  Therefore, if `Transaction` is a function, it does not have to return a valid object and
+  could throw unconditionally.
+  If you cannot easily create an instance of `Transaction`, consider defining a `Fake`:
+  
+  ```
+  class MyTypeFake extends Fake implements MyType {}
+  
+  void main() {
+    setUpAll(() {
+      registerFallbackValue(MyTypeFake());
+    });
+  }
+  ```
+  
+  Fallbacks are required because mocktail has to know of a valid `Transaction` to prevent
+  TypeErrors from being thrown in Dart's sound null safe mode, while still
+  providing a convenient syntax.
+  
+  package:mocktail/src/_register_matcher.dart 49:5    _getFallbackValue
+  package:mocktail/src/_register_matcher.dart 160:25  _registerMatcher
+  package:mocktail/src/_register_matcher.dart 104:10  any
+  test\features\income\income_bloc_test.dart 76:38    main.<fn>.<fn>.<fn>
+  package:mocktail/src/mocktail.dart 211:9            when.<fn>
+  test\features\income\income_bloc_test.dart 76:13    main.<fn>.<fn>
+  package:bloc_test/src/bloc_test.dart 199:20         testBloc.<fn>
+  package:bloc_test/src/bloc_test.dart 252:15         _runZonedGuarded.<fn>
+  dart:async                                          runZonedGuarded
+  package:bloc_test/src/bloc_test.dart 251:3          _runZonedGuarded
+  package:bloc_test/src/bloc_test.dart 198:11         testBloc
+  package:bloc_test/src/bloc_test.dart 156:13         blocTest.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                          _Completer.completeError
+  package:bloc_test/src/bloc_test.dart 255:43         _runZonedGuarded.<fn>
+  ===== asynchronous gap ===========================
+  dart:async                                          _CustomZone.registerBinaryCallback
+  package:bloc_test/src/bloc_test.dart 252:5          _runZonedGuarded.<fn>
+  dart:async                                          runZonedGuarded
+  package:bloc_test/src/bloc_test.dart 251:3          _runZonedGuarded
+  package:bloc_test/src/bloc_test.dart 198:11         testBloc
+  package:bloc_test/src/bloc_test.dart 156:13         blocTest.<fn>
+  
+00:08 +45 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +46 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +47 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +48 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +49 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +50 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +51 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +52 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +53 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +54 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:08 +55 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests renders balance and safe to spend correctly
+00:09 +56 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: HomePage Widget Tests shows warning banner during lean periods
+00:09 +57 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/home/home_widget_test.dart: (tearDownAll)
+00:09 +57 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: initial state is ProfileInitial
+00:09 +58 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: LoadProfile emits [ProfileLoading, ProfileLoaded] when profile is fetched successfully
+00:09 +59 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: LoadProfile emits [ProfileLoading, ProfileError] when profile fetch fails
+00:09 +60 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: SaveProfile emits [ProfileActionInProgress, ProfileSaved, ProfileLoaded] on success
+00:09 +61 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: SaveProfile emits ProfileError when no profile is loaded before saving
+00:09 +62 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: SaveProfile emits ProfileLoaded with lastError when update fails
+00:09 +63 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: ClearProfileFeedback re-emits ProfileLoaded without lastError when cleared
+00:09 +64 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: UserProfile entity copyWith correctly updates a single field
+00:09 +65 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: UserProfile entity supports value equality
+00:09 +66 -3: C:/Users/USER/Documents/PocketPlan/pocketPlan/test/features/profile/profile_bloc_test.dart: UserProfile entity photoUrl defaults to empty string
+00:09 +67 -3: Some tests failed.

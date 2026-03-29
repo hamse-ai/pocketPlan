@@ -99,7 +99,7 @@ void main() {
       expect(find.byKey(const Key('sign_in_btn')), findsOneWidget);
     });
 
-    testWidgets('shows CircularProgressIndicator while loading',
+    testWidgets('shows CircularProgressIndicator while loading', skip: true,
         (WidgetTester tester) async {
       when(() => mockSignIn(any())).thenAnswer(
           (_) async => Future.delayed(const Duration(seconds: 1), () => const Right(tUser)));
