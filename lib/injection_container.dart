@@ -24,6 +24,23 @@ import 'features/income/domain/usecases/transaction_usecases.dart';
 import 'features/income/presentation/bloc/income_bloc.dart';
 import 'features/budget/presentation/bloc/expense_bloc.dart';
 
+import 'features/profile/data/data_sources/profile_firebase_datasource.dart';
+import 'features/profile/data/repositories/profile_repository_impl.dart';
+import 'features/profile/domain/repositories/profile_repository.dart';
+import 'features/profile/domain/usecases/get_profile.dart';
+import 'features/profile/domain/usecases/update_profile.dart';
+import 'features/profile/domain/usecases/upload_profile_photo.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
+
+import 'features/settings/data/data_sources/settings_firebase_datasource.dart';
+import 'features/settings/data/data_sources/settings_local_datasource.dart';
+import 'features/settings/data/repositories/settings_repository_impl.dart';
+import 'features/settings/domain/repositories/settings_repository.dart';
+import 'features/settings/domain/usecases/account_management_usecases.dart';
+import 'features/settings/domain/usecases/get_settings.dart';
+import 'features/settings/domain/usecases/save_settings.dart';
+import 'features/settings/presentation/bloc/settings_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -98,8 +115,68 @@ Future<void> init() async {
     () => TransactionRemoteDataSourceImpl(firestore: sl()),
   );
 
-  // External
-  sl.registerLazySingleton(() => FirebaseAuth.instance);
-  sl.registerLazySingleton(() => FirebaseFirestore.instance);
-  sl.registerLazySingleton(() => gsi.GoogleSignIn());
+  // --- Profile Features ---
+  // Bloc
+  sl.registerFactory(() => ProfileBloc(
+        getProfile: sl(),
+        updateProfile: sl(),
+        uploadProfilePhoto: sl(),
+      ));
+
+  // Use cases
+  sl.registerLazySingleton(() => GetProfile(sl()));
+  sl.registerLazySingleton(() => UpdateProfile(sl()));
+  sl.registerLazySingleton(() => UploadProfilePhoto(sl()));
+
+  // Repository
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remote: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<ProfileFirebaseDataSource>(
+    () => ProfileFirebaseDataSourceImpl(
+      firestore: sl(),
+      auth: sl(),
+      storage: sl(),
+    ),
+  );
+
+  // --- Settings Features ---
+  // Bloc
+  sl.registerFactory(() => SettingsBloc(
+        getSettings: sl(),
+        saveSettings: sl(),
+        changePassword: sl(),
+        deleteAccount: sl(),
+        downloadUserData: sl(),
+      ));
+
+  // Use cases
+  sl.registerLazySingleton(() => GetSettings(sl()));
+  sl.registerLazySingleton(() => SaveSettings(sl()));
+  sl.registerLazySingleton(() => ChangePassword(sl()));
+  sl.registerLazySingleton(() => DeleteAccount(auth: sl(), firestore: sl()));
+  sl.registerLazySingleton(() => DownloadUserData(auth: sl(), firestore: sl()));
+
+  // Repository
+  sl.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(
+      firebaseDataSource: sl(),
+      localDataSource: sl(),
+    ),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<SettingsFirebaseDataSource>(
+    () => SettingsFirebaseDataSourceImpl(
+      firestore: sl(),
+      auth: sl(),
+    ),
+  );
+  sl.registerLazySingleton<SettingsLocalDataSource>(
+    () => SettingsLocalDataSourceImpl(
+      sharedPreferences: sl(),
+    ),
+  );
 }
