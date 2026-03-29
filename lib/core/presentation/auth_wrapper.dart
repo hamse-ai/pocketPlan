@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../presentation/main_navigation.dart';
-import '../../../features/auth/presentation/pages/signin_page.dart';
+iimport '../../../features/auth/presentation/pages/signin_page.dart';
 
 /// AuthWrapper checks if user is logged in and routes accordingly
+```
+```
 /// 
 /// Flow:
 /// - Not logged in → SignInPage
