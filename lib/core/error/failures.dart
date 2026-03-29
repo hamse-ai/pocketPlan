@@ -20,10 +20,14 @@ class ServerFailure extends Failure {
   const ServerFailure(String message) : super(message);
 }
 
+/// Thrown when an authentication operation fails
 class AuthFailure extends Failure {
   const AuthFailure(String message) : super(message);
 }
 
+/// Thrown when a local cache operation fails
 class CacheFailure extends Failure {
+```
+```
   const CacheFailure(String message) : super(message);
 }
