@@ -47,7 +47,9 @@ double _savingPercentage = 20.0;
             final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
             final daysLeft = lastDayOfMonth.day - now.day + 1;
 
-            // Lean period logic based on Safe To Spend instead of raw balance
+            // Lean period is triggered when daily budget falls below RWF 3,000
+```
+```
             double dailyBudget = daysLeft > 0 ? safeToSpend / daysLeft : 0;
             bool isLeanPeriod = dailyBudget > 0 && dailyBudget < 3000;
             if (safeToSpend <= 0 && rawBalance > 0) {
